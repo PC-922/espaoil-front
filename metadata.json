@@ -1,0 +1,7 @@
+{
+  "name": "EspaOil",
+  "description": "Encuentra las gasolineras más baratas cerca de ti.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
