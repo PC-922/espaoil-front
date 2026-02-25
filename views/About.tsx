@@ -9,11 +9,10 @@ export const About: React.FC = () => {
           EspaOil es una aplicación diseñada para ayudarte a ahorrar en cada repostaje.
         </p>
         <p>
-          Utilizamos datos en tiempo real para localizar las estaciones de servicio más económicas en tu zona.
+          Utilizamos datos del Ministerio para la Transición Ecológica y el Reto Demográfico. Se actualiza cada 2 horas.
         </p>
         <div className="border-t border-gray-100 pt-4 mt-4">
-          <h3 className="font-bold text-gray-900 mb-2">Desarrollado con ❤️</h3>
-          <p className="text-sm">Versión 1.0.0 (PWA)</p>
+          <p className="text-sm">Versión 1.0.0</p>
         </div>
       </div>
     </div>

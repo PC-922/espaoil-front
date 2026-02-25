@@ -25,6 +25,25 @@ export const Home: React.FC = () => {
     });
   }, [stations, sortBy]);
 
+  const getCurrentPosition = (options: PositionOptions): Promise<GeolocationPosition> => {
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
+    });
+  };
+
+  const getGeolocationErrorMessage = (error: GeolocationPositionError): string => {
+    if (error.code === error.PERMISSION_DENIED) {
+      return 'El acceso a la ubicación fue denegado. Revisa los permisos del navegador y del sistema.';
+    }
+    if (error.code === error.POSITION_UNAVAILABLE) {
+      return 'No se pudo determinar tu ubicación en este momento. Intenta de nuevo en unos segundos.';
+    }
+    if (error.code === error.TIMEOUT) {
+      return 'La obtención de ubicación tardó demasiado. Intenta de nuevo con mejor señal.';
+    }
+    return 'No se pudo obtener tu ubicación por un error inesperado.';
+  };
+
   const handleSearch = async () => {
     setLocationStatus('locating');
     setLoading(true);
@@ -36,33 +55,51 @@ export const Home: React.FC = () => {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        setLocationStatus('success');
-        try {
-          const data = await getGasStations({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
-            radiusKm: radius,
-            gasType: fuelType
-          });
-          setStations(data);
-          setSearched(true);
-        } catch (error) {
-          console.error(error);
-          alert("Error al conectar con el servidor.");
-        } finally {
-          setLoading(false);
-        }
-      },
-      (error) => {
-        console.error(error);
-        setLocationStatus('error');
-        setLoading(false);
-        alert("No se pudo obtener tu ubicación. Por favor, revisa los permisos.");
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
+    if (!window.isSecureContext) {
+      setLocationStatus('error');
+      setLoading(false);
+      alert('Para usar geolocalización en móvil debes abrir la app en HTTPS (o localhost).');
+      return;
+    }
+
+    try {
+      let position: GeolocationPosition;
+
+      try {
+        position = await getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        });
+      } catch {
+        position = await getCurrentPosition({
+          enableHighAccuracy: false,
+          timeout: 20000,
+          maximumAge: 60000,
+        });
+      }
+
+      setLocationStatus('success');
+      const data = await getGasStations({
+        lat: position.coords.latitude,
+        lon: position.coords.longitude,
+        radiusKm: radius,
+        gasType: fuelType,
+      });
+      setStations(data);
+      setSearched(true);
+    } catch (error) {
+      setLocationStatus('error');
+      console.error(error);
+
+      if (error instanceof GeolocationPositionError) {
+        alert(getGeolocationErrorMessage(error));
+      } else {
+        alert('Error al conectar con el servidor.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

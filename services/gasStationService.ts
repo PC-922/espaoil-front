@@ -22,14 +22,16 @@ export const getGasStations = async (params: FetchParams): Promise<GasStationMod
   } else {
     // Real API Call
     const distanceMeters = radiusKm * 1000;
-    const url = new URL(`${CONFIG.API_BASE_URL}/gas-stations/near`);
-    url.searchParams.append('lat', lat.toString());
-    url.searchParams.append('lon', lon.toString());
-    url.searchParams.append('distance', distanceMeters.toString());
-    url.searchParams.append('gasType', gasType);
+    const queryParams = new URLSearchParams({
+      lat: lat.toString(),
+      lon: lon.toString(),
+      distance: distanceMeters.toString(),
+      gasType,
+    });
+    const requestUrl = `${CONFIG.API_BASE_URL}/gas-stations/near?${queryParams.toString()}`;
 
     try {
-      const response = await fetch(url.toString());
+      const response = await fetch(requestUrl);
       if (!response.ok) {
         throw new Error(`API Error: ${response.statusText}`);
       }
