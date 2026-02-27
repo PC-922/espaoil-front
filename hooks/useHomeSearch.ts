@@ -24,7 +24,10 @@ const getStoredHomeState = (): HomePersistedState | null => {
 
     const parsed = JSON.parse(raw) as Partial<HomePersistedState>;
     const isValidPersistedAt =
-      typeof parsed.persistedAt === 'number' && Number.isFinite(parsed.persistedAt);
+      typeof parsed.persistedAt === 'number' &&
+      Number.isFinite(parsed.persistedAt) &&
+      parsed.persistedAt > 0 &&
+      parsed.persistedAt <= Date.now();
     const isValidFuelType =
       typeof parsed.fuelType === 'string' &&
       Object.values(FuelType).includes(parsed.fuelType as FuelType);
@@ -34,7 +37,7 @@ const getStoredHomeState = (): HomePersistedState | null => {
     const isValidSearched = typeof parsed.searched === 'boolean';
 
     if (isValidPersistedAt && isValidFuelType && isValidSort && isValidRadius && isValidStations && isValidSearched) {
-      if (Date.now() - parsed.persistedAt > HOME_STATE_TTL_MS) {
+      if (Date.now() - parsed.persistedAt >= HOME_STATE_TTL_MS) {
         localStorage.removeItem(HOME_STATE_STORAGE_KEY);
         return null;
       }
