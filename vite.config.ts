@@ -79,6 +79,19 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      }
+      },
+      test: {
+        environment: 'jsdom',
+        coverage: {
+          provider: 'v8',
+          reporter: ['text', 'html'],
+          thresholds: {
+            lines: 70,
+            functions: 70,
+            branches: 70,
+            statements: 70,
+          },
+        },
+      },
     };
 });
