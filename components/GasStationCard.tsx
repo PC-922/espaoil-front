@@ -1,14 +1,16 @@
 import React from 'react';
 import { Fuel, Navigation } from 'lucide-react';
-import { GasStationModel } from '../types';
+import { GasStationModel, MAP_PROVIDER_LABELS } from '../types';
 import { formatDistance, formatPrice } from '../utils/geo';
+import { buildMapUrl, getMapProvider } from '../utils/maps';
 
 interface Props {
   station: GasStationModel;
 }
 
 export const GasStationCard: React.FC<Props> = ({ station }) => {
-  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${station.numericLat},${station.numericLon}`;
+  const mapProvider = getMapProvider();
+  const mapsUrl = buildMapUrl(mapProvider, station.numericLat, station.numericLon);
 
   return (
     <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
@@ -45,7 +47,7 @@ export const GasStationCard: React.FC<Props> = ({ station }) => {
           rel="noopener noreferrer"
           className="text-sm font-semibold text-red-600 hover:text-red-700 flex items-center gap-1"
         >
-          Ver ruta en el mapa
+          Ver ruta en {MAP_PROVIDER_LABELS[mapProvider]}
         </a>
       </div>
     </div>

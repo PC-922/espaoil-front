@@ -1,9 +1,9 @@
 import React from 'react';
-import { Home, Info } from 'lucide-react';
+import { Home, Info, Settings } from 'lucide-react';
 
 interface Props {
-  currentView: 'home' | 'about';
-  onViewChange: (view: 'home' | 'about') => void;
+  currentView: 'home' | 'about' | 'settings';
+  onViewChange: (view: 'home' | 'about' | 'settings') => void;
 }
 
 export const BottomNav: React.FC<Props> = ({ currentView, onViewChange }) => {
@@ -22,6 +22,13 @@ export const BottomNav: React.FC<Props> = ({ currentView, onViewChange }) => {
       >
         <Info size={24} />
         <span className="text-[10px] font-medium">About</span>
+      </button>
+      <button 
+        onClick={() => onViewChange('settings')}
+        className={`flex flex-col items-center gap-1 p-2 ${currentView === 'settings' ? 'text-red-600' : 'text-gray-400'}`}
+      >
+        <Settings size={24} />
+        <span className="text-[10px] font-medium">Ajustes</span>
       </button>
     </div>
   );

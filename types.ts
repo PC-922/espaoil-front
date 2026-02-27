@@ -58,3 +58,11 @@ export interface Coordinates {
 }
 
 export type SortOption = 'price' | 'distance';
+
+export type MapProvider = 'google' | 'apple' | 'waze';
+
+export const MAP_PROVIDER_LABELS: Record<MapProvider, string> = {
+  google: 'Google Maps',
+  apple: 'Apple Maps',
+  waze: 'Waze',
+};
