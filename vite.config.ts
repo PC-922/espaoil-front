@@ -57,6 +57,10 @@ const clientTracePlugin = () => {
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
+  const appVersion = process.env.npm_package_version || '0.0.0';
+  const commitShaRaw = process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || process.env.COMMIT_SHA || 'local';
+  const commitSha = commitShaRaw === 'local' ? 'local' : commitShaRaw.slice(0, 7);
+  const buildDate = new Date().toISOString();
     return {
       server: {
         port: 3000,
@@ -73,7 +77,10 @@ export default defineConfig(({ mode }) => {
       plugins: [react(), clientTracePlugin()],
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        __APP_VERSION__: JSON.stringify(appVersion),
+        __APP_COMMIT_SHA__: JSON.stringify(commitSha),
+        __APP_BUILD_DATE__: JSON.stringify(buildDate),
       },
       resolve: {
         alias: {
