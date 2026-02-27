@@ -2,6 +2,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { CONFIG } from '../config';
 import { FuelType, GasStationModel } from '../types';
 
 const mockGetNearbyStations = vi.fn();
@@ -62,6 +63,7 @@ describe('useHomeSearch', () => {
         sortBy: 'distance',
         stations: [sampleStation({ distance: 2.2 })],
         searched: true,
+        persistedAt: Date.now(),
       })
     );
 
@@ -105,6 +107,28 @@ describe('useHomeSearch', () => {
     expect(result.current.locationStatus).toBe('success');
     expect(result.current.loading).toBe(false);
     expect(result.current.stations).toHaveLength(2);
+  });
+
+  it('ignora el estado persistido cuando supera 30 minutos', () => {
+    localStorage.setItem(
+      'espaoil.homeState',
+      JSON.stringify({
+        fuelType: FuelType.GASOIL_A,
+        radius: 35,
+        sortBy: 'distance',
+        stations: [sampleStation({ distance: 2.2 })],
+        searched: true,
+        persistedAt: Date.now() - 31 * 60 * 1000,
+      })
+    );
+
+    const { result } = renderHook(() => useHomeSearch());
+
+    expect(result.current.fuelType).toBe(FuelType[CONFIG.DEFAULT_FUEL_TYPE as keyof typeof FuelType]);
+    expect(result.current.radius).toBe(CONFIG.DEFAULT_SEARCH_RADIUS_KM);
+    expect(result.current.sortBy).toBe('price');
+    expect(result.current.searched).toBe(false);
+    expect(result.current.sortedStations).toEqual([]);
   });
 
   it('marca error si geolocalización no está disponible', async () => {

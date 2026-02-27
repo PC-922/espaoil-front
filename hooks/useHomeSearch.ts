@@ -4,6 +4,7 @@ import { defaultGasStationRepository } from '../repositories/httpGasStationRepos
 import { FuelType, GasStationModel, SortOption } from '../types';
 
 const HOME_STATE_STORAGE_KEY = 'espaoil.homeState';
+const HOME_STATE_TTL_MS = 30 * 60 * 1000;
 
 interface HomePersistedState {
   fuelType: FuelType;
@@ -11,6 +12,7 @@ interface HomePersistedState {
   sortBy: SortOption;
   stations: GasStationModel[];
   searched: boolean;
+  persistedAt: number;
 }
 
 const getStoredHomeState = (): HomePersistedState | null => {
@@ -21,6 +23,11 @@ const getStoredHomeState = (): HomePersistedState | null => {
     }
 
     const parsed = JSON.parse(raw) as Partial<HomePersistedState>;
+    const isValidPersistedAt =
+      typeof parsed.persistedAt === 'number' &&
+      Number.isFinite(parsed.persistedAt) &&
+      parsed.persistedAt > 0 &&
+      parsed.persistedAt <= Date.now();
     const isValidFuelType =
       typeof parsed.fuelType === 'string' &&
       Object.values(FuelType).includes(parsed.fuelType as FuelType);
@@ -29,13 +36,18 @@ const getStoredHomeState = (): HomePersistedState | null => {
     const isValidStations = Array.isArray(parsed.stations);
     const isValidSearched = typeof parsed.searched === 'boolean';
 
-    if (isValidFuelType && isValidSort && isValidRadius && isValidStations && isValidSearched) {
+    if (isValidPersistedAt && isValidFuelType && isValidSort && isValidRadius && isValidStations && isValidSearched) {
+      if (Date.now() - parsed.persistedAt >= HOME_STATE_TTL_MS) {
+        localStorage.removeItem(HOME_STATE_STORAGE_KEY);
+        return null;
+      }
       return {
         fuelType: parsed.fuelType as FuelType,
         radius: parsed.radius,
         sortBy: parsed.sortBy,
         stations: parsed.stations as GasStationModel[],
         searched: parsed.searched,
+        persistedAt: parsed.persistedAt,
       };
     }
   } catch {
@@ -83,6 +95,7 @@ export const useHomeSearch = () => {
       sortBy,
       stations,
       searched,
+      persistedAt: Date.now(),
     };
 
     try {
