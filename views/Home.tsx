@@ -103,7 +103,9 @@ export const Home: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-2">
              <h2 className="text-sm font-bold text-gray-900">Resultados ({stations.length})</h2>
-             <span className="text-xs text-gray-400">más baratas primero</span>
+             <span className="text-xs text-gray-400">
+              {sortBy === 'price' ? 'más baratas primero' : 'más cercanas primero'}
+             </span>
           </div>
 
           <div className="flex gap-2 mb-4 bg-gray-200 p-1 rounded-xl">
