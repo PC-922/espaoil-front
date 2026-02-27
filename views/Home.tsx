@@ -6,14 +6,75 @@ import { getGasStations } from '../services/gasStationService';
 import { Button } from '../components/Button';
 import { GasStationCard } from '../components/GasStationCard';
 
+const HOME_STATE_STORAGE_KEY = 'espaoil.homeState';
+
+interface HomePersistedState {
+  fuelType: FuelType;
+  radius: number;
+  sortBy: SortOption;
+  stations: GasStationModel[];
+  searched: boolean;
+}
+
+const getStoredHomeState = (): HomePersistedState | null => {
+  try {
+    const raw = localStorage.getItem(HOME_STATE_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<HomePersistedState>;
+    const isValidFuelType =
+      typeof parsed.fuelType === 'string' &&
+      Object.values(FuelType).includes(parsed.fuelType as FuelType);
+    const isValidSort = parsed.sortBy === 'price' || parsed.sortBy === 'distance';
+    const isValidRadius = typeof parsed.radius === 'number' && Number.isFinite(parsed.radius);
+    const isValidStations = Array.isArray(parsed.stations);
+    const isValidSearched = typeof parsed.searched === 'boolean';
+
+    if (isValidFuelType && isValidSort && isValidRadius && isValidStations && isValidSearched) {
+      return {
+        fuelType: parsed.fuelType as FuelType,
+        radius: parsed.radius,
+        sortBy: parsed.sortBy,
+        stations: parsed.stations as GasStationModel[],
+        searched: parsed.searched,
+      };
+    }
+  } catch {
+    // noop
+  }
+
+  return null;
+};
+
 export const Home: React.FC = () => {
-  const [fuelType, setFuelType] = useState<FuelType>(FuelType[CONFIG.DEFAULT_FUEL_TYPE as keyof typeof FuelType]);
-  const [radius, setRadius] = useState<number>(CONFIG.DEFAULT_SEARCH_RADIUS_KM);
-  const [stations, setStations] = useState<GasStationModel[]>([]);
+  const [storedState] = useState<HomePersistedState | null>(() => getStoredHomeState());
+  const [fuelType, setFuelType] = useState<FuelType>(
+    storedState?.fuelType ?? FuelType[CONFIG.DEFAULT_FUEL_TYPE as keyof typeof FuelType]
+  );
+  const [radius, setRadius] = useState<number>(storedState?.radius ?? CONFIG.DEFAULT_SEARCH_RADIUS_KM);
+  const [stations, setStations] = useState<GasStationModel[]>(storedState?.stations ?? []);
   const [loading, setLoading] = useState<boolean>(false);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'locating' | 'success' | 'error'>('idle');
-  const [sortBy, setSortBy] = useState<SortOption>('price');
-  const [searched, setSearched] = useState<boolean>(false);
+  const [sortBy, setSortBy] = useState<SortOption>(storedState?.sortBy ?? 'price');
+  const [searched, setSearched] = useState<boolean>(storedState?.searched ?? false);
+
+  useEffect(() => {
+    const stateToPersist: HomePersistedState = {
+      fuelType,
+      radius,
+      sortBy,
+      stations,
+      searched,
+    };
+
+    try {
+      localStorage.setItem(HOME_STATE_STORAGE_KEY, JSON.stringify(stateToPersist));
+    } catch {
+      // noop
+    }
+  }, [fuelType, radius, sortBy, stations, searched]);
 
   // Sorting Logic
   const sortedStations = React.useMemo(() => {
