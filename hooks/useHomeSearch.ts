@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CONFIG } from '../config';
-import { getGasStations } from '../services/gasStationService';
+import { defaultGasStationRepository } from '../repositories/httpGasStationRepository';
 import { FuelType, GasStationModel, SortOption } from '../types';
 
 const HOME_STATE_STORAGE_KEY = 'espaoil.homeState';
@@ -137,7 +137,7 @@ export const useHomeSearch = () => {
       }
 
       setLocationStatus('success');
-      const data = await getGasStations({
+      const data = await defaultGasStationRepository.getNearbyStations({
         lat: position.coords.latitude,
         lon: position.coords.longitude,
         radiusKm: radius,
