@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/PC-922/espaoil-front/compare/v1.0.1...v1.1.0) (2026-03-02)
+
+### Features
+
+* add address search mode with suggestions and geocoding functionality ([0f97465](https://github.com/PC-922/espaoil-front/commit/0f974650c29934565cf13cea3ba1884fe19052af))
+
 ## [1.0.1](https://github.com/PC-922/espaoil-front/compare/v1.0.0...v1.0.1) (2026-02-27)
 
 ### Bug Fixes
