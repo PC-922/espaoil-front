@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CONFIG } from '../config';
 import { defaultGasStationRepository } from '../repositories/httpGasStationRepository';
 import { FuelType, GasStationModel, SortOption } from '../types';
+import { AddressSuggestion, geocodeAddress, searchAddressSuggestions } from '../utils/geocoding';
 
 const HOME_STATE_STORAGE_KEY = 'espaoil.homeState';
 const HOME_STATE_TTL_MS = 30 * 60 * 1000;
@@ -13,7 +14,11 @@ interface HomePersistedState {
   stations: GasStationModel[];
   searched: boolean;
   persistedAt: number;
+  searchMode: SearchMode;
+  addressQuery: string;
 }
+
+type SearchMode = 'location' | 'address';
 
 const getStoredHomeState = (): HomePersistedState | null => {
   try {
@@ -35,8 +40,18 @@ const getStoredHomeState = (): HomePersistedState | null => {
     const isValidRadius = typeof parsed.radius === 'number' && Number.isFinite(parsed.radius);
     const isValidStations = Array.isArray(parsed.stations);
     const isValidSearched = typeof parsed.searched === 'boolean';
+    const isValidSearchMode = parsed.searchMode === 'location' || parsed.searchMode === 'address';
+    const isValidAddressQuery = typeof parsed.addressQuery === 'string';
 
-    if (isValidPersistedAt && isValidFuelType && isValidSort && isValidRadius && isValidStations && isValidSearched) {
+    if (isValidPersistedAt && 
+      isValidFuelType &&
+      isValidSort &&
+      isValidRadius &&
+      isValidStations &&
+      isValidSearched &&
+      isValidSearchMode &&
+      isValidAddressQuery
+    ) {
       if (Date.now() - parsed.persistedAt >= HOME_STATE_TTL_MS) {
         localStorage.removeItem(HOME_STATE_STORAGE_KEY);
         return null;
@@ -48,6 +63,8 @@ const getStoredHomeState = (): HomePersistedState | null => {
         stations: parsed.stations as GasStationModel[],
         searched: parsed.searched,
         persistedAt: parsed.persistedAt,
+        searchMode: parsed.searchMode,
+        addressQuery: parsed.addressQuery,
       };
     }
   } catch {
@@ -78,6 +95,11 @@ const getGeolocationErrorMessage = (error: GeolocationPositionError): string => 
 
 export const useHomeSearch = () => {
   const [storedState] = useState<HomePersistedState | null>(() => getStoredHomeState());
+  const [searchMode, setSearchMode] = useState<SearchMode>(storedState?.searchMode ?? 'location');
+  const [addressQuery, setAddressQuery] = useState<string>(storedState?.addressQuery ?? '');
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState<boolean>(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<AddressSuggestion | null>(null);
   const [fuelType, setFuelType] = useState<FuelType>(
     storedState?.fuelType ?? FuelType[CONFIG.DEFAULT_FUEL_TYPE as keyof typeof FuelType]
   );
@@ -96,6 +118,8 @@ export const useHomeSearch = () => {
       stations,
       searched,
       persistedAt: Date.now(),
+      searchMode,
+      addressQuery,
     };
 
     try {
@@ -103,7 +127,7 @@ export const useHomeSearch = () => {
     } catch {
       // noop
     }
-  }, [fuelType, radius, sortBy, stations, searched]);
+  }, [fuelType, radius, sortBy, stations, searched, searchMode, addressQuery]);
 
   const sortedStations = useMemo(() => {
     return [...stations].sort((a, b) => {
@@ -114,56 +138,135 @@ export const useHomeSearch = () => {
     });
   }, [stations, sortBy]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      if (searchMode !== 'address') {
+        setAddressSuggestions([]);
+        setSuggestionsLoading(false);
+        return;
+      }
+
+      const trimmedAddress = addressQuery.trim();
+      if (trimmedAddress.length < 3) {
+        setAddressSuggestions([]);
+        setSuggestionsLoading(false);
+        return;
+      }
+
+      setSuggestionsLoading(true);
+      try {
+        const suggestions = await searchAddressSuggestions(trimmedAddress, 5);
+        if (!cancelled) {
+          setAddressSuggestions(suggestions);
+        }
+      } catch {
+        if (!cancelled) {
+          setAddressSuggestions([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setSuggestionsLoading(false);
+        }
+      }
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchMode, addressQuery]);
+
+  const handleAddressQueryChange = (value: string) => {
+    setAddressQuery(value);
+    if (selectedSuggestion?.label !== value.trim()) {
+      setSelectedSuggestion(null);
+    }
+  };
+
+  const handleSelectAddressSuggestion = (suggestion: AddressSuggestion) => {
+    setAddressQuery(suggestion.label);
+    setSelectedSuggestion(suggestion);
+    setAddressSuggestions([]);
+  };
+
   const handleSearch = async () => {
     setLocationStatus('locating');
     setLoading(true);
 
-    if (!navigator.geolocation) {
-      alert('La geolocalización no está soportada por tu navegador.');
-      setLocationStatus('error');
-      setLoading(false);
-      return;
-    }
-
-    if (!window.isSecureContext) {
-      setLocationStatus('error');
-      setLoading(false);
-      alert('Para usar geolocalización en móvil debes abrir la app en HTTPS (o localhost).');
-      return;
-    }
-
     try {
-      let position: GeolocationPosition;
+      let lat: number;
+      let lon: number;
 
-      try {
-        position = await getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
-        });
-      } catch {
-        position = await getCurrentPosition({
-          enableHighAccuracy: false,
-          timeout: 20000,
-          maximumAge: 60000,
-        });
+      if (searchMode === 'address') {
+        const trimmedAddress = addressQuery.trim();
+        if (!trimmedAddress) {
+          setLocationStatus('error');
+          alert('Escribe una dirección para buscar.');
+          return;
+        }
+
+        if (selectedSuggestion && selectedSuggestion.label === trimmedAddress) {
+          lat = selectedSuggestion.lat;
+          lon = selectedSuggestion.lon;
+        } else {
+          const coordinates = await geocodeAddress(trimmedAddress);
+          lat = coordinates.lat;
+          lon = coordinates.lon;
+        }
+      } else {
+        if (!navigator.geolocation) {
+          alert('La geolocalización no está soportada por tu navegador.');
+          setLocationStatus('error');
+          return;
+        }
+
+        if (!window.isSecureContext) {
+          setLocationStatus('error');
+          alert('Para usar geolocalización en móvil debes abrir la app en HTTPS (o localhost).');
+          return;
+        }
+
+        let position: GeolocationPosition;
+
+        try {
+          position = await getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
+          });
+        } catch {
+          position = await getCurrentPosition({
+            enableHighAccuracy: false,
+            timeout: 20000,
+            maximumAge: 60000,
+          });
+        }
+
+        lat = position.coords.latitude;
+        lon = position.coords.longitude;
       }
 
       setLocationStatus('success');
       const data = await defaultGasStationRepository.getNearbyStations({
-        lat: position.coords.latitude,
-        lon: position.coords.longitude,
+        lat,
+        lon,
         radiusKm: radius,
         gasType: fuelType,
       });
       setStations(data);
       setSearched(true);
+      setAddressSuggestions([]);
     } catch (error) {
       setLocationStatus('error');
       console.error(error);
 
       if (error instanceof GeolocationPositionError) {
         alert(getGeolocationErrorMessage(error));
+      } else if (error instanceof Error) {
+        alert(error.message || 'Error al conectar con el servidor.');
       } else {
         alert('Error al conectar con el servidor.');
       }
@@ -173,6 +276,14 @@ export const useHomeSearch = () => {
   };
 
   return {
+    searchMode,
+    setSearchMode,
+    addressQuery,
+    setAddressQuery,
+    addressSuggestions,
+    suggestionsLoading,
+    handleAddressQueryChange,
+    handleSelectAddressSuggestion,
     fuelType,
     setFuelType,
     radius,

@@ -7,6 +7,13 @@ import { useHomeSearch } from '../hooks/useHomeSearch';
 
 export const Home: React.FC = () => {
   const {
+    searchMode,
+    setSearchMode,
+    addressQuery,
+    addressSuggestions,
+    suggestionsLoading,
+    handleAddressQueryChange,
+    handleSelectAddressSuggestion,
     fuelType,
     setFuelType,
     radius,
@@ -29,6 +36,57 @@ export const Home: React.FC = () => {
 
       {/* Controls Section */}
       <section className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 space-y-4 mb-6">
+        <div>
+          <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Modo de búsqueda</label>
+          <div className="flex gap-2 bg-gray-200 p-1 rounded-xl">
+            <button
+              onClick={() => setSearchMode('location')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${searchMode === 'location' ? 'bg-red-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-300'}`}
+            >
+              Mi ubicación
+            </button>
+            <button
+              onClick={() => setSearchMode('address')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${searchMode === 'address' ? 'bg-red-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-300'}`}
+            >
+              Dirección
+            </button>
+          </div>
+        </div>
+
+        {searchMode === 'address' && (
+          <div className="relative">
+            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Dirección</label>
+            <input
+              type="text"
+              value={addressQuery}
+              onChange={(e) => handleAddressQueryChange(e.target.value)}
+              placeholder="Ej: Gran Vía 1, Madrid"
+              className="w-full bg-red-50 border border-red-100 text-red-900 font-semibold rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+
+            {addressQuery.trim().length >= 3 && (suggestionsLoading || addressSuggestions.length > 0) && (
+              <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-sm max-h-60 overflow-auto z-20">
+                {suggestionsLoading && (
+                  <div className="px-3 py-2 text-sm text-gray-400">Buscando sugerencias...</div>
+                )}
+
+                {!suggestionsLoading &&
+                  addressSuggestions.map((suggestion, index) => (
+                    <button
+                      key={`${suggestion.lat}-${suggestion.lon}-${index}`}
+                      type="button"
+                      onClick={() => handleSelectAddressSuggestion(suggestion)}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-red-50 border-b border-gray-100 last:border-b-0"
+                    >
+                      {suggestion.label}
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <div>
           <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Tipo de combustible</label>
           <div className="relative">
@@ -74,7 +132,7 @@ export const Home: React.FC = () => {
              </span>
           ) : (
             <>
-              <LocateFixed size={18} />
+              {searchMode === 'location' ? <LocateFixed size={18} /> : <Search size={18} />}
               Buscar Gasolineras
             </>
           )}
@@ -89,12 +147,21 @@ export const Home: React.FC = () => {
          </div>
       )}
       
-      {locationStatus === 'locating' && (
+      {locationStatus === 'locating' && searchMode === 'location' && (
         <div className="flex flex-col items-center justify-center py-12 text-gray-400">
           <div className="animate-bounce mb-4 text-red-200">
              <MapPin size={48} />
           </div>
           <p>Obteniendo ubicación precisa...</p>
+        </div>
+      )}
+
+      {locationStatus === 'locating' && searchMode === 'address' && (
+        <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+          <div className="animate-pulse mb-4 text-red-200">
+            <Search size={48} />
+          </div>
+          <p>Buscando dirección...</p>
         </div>
       )}
 

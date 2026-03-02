@@ -5,6 +5,7 @@ React web/PWA app to search nearby gas stations, compare by price or distance, a
 ## Main features
 
 - Search nearby gas stations using the current location.
+- Search planned areas by typing an address.
 - Filter by fuel type and search radius.
 - Sort by price or distance.
 - Navigation with Google Maps, Apple Maps, or Waze (configurable).
@@ -95,7 +96,7 @@ Workflow configured in `.github/workflows/release.yml`:
 - `hooks/`: application logic (`useHomeSearch`).
 - `repositories/`: data access (`HttpGasStationRepository`).
 - `services/`: compatibility facade and mocks.
-- `utils/`: helpers (geo, maps, formatting).
+- `utils/`: helpers (geo, maps, geocoding, formatting).
 - `components/`: reusable UI.
 
 ## Build metadata in the app
