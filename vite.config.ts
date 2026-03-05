@@ -1,8 +1,10 @@
 import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const clientTracePlugin = () => {
+  const maxPayloadBytes = 10_000;
+
   return {
     name: 'client-trace-to-terminal',
     configureServer(server: any) {
@@ -14,6 +16,12 @@ const clientTracePlugin = () => {
 
         let body = '';
         req.on('data', (chunk: Buffer | string) => {
+          if (body.length > maxPayloadBytes) {
+            res.statusCode = 413;
+            res.end();
+            req.destroy();
+            return;
+          }
           body += chunk.toString();
         });
 
@@ -56,7 +64,6 @@ const clientTracePlugin = () => {
 };
 
 export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
   const appVersion = process.env.npm_package_version || '0.0.0';
   const commitShaRaw = process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || process.env.COMMIT_SHA || 'local';
   const commitSha = commitShaRaw === 'local' ? 'local' : commitShaRaw.slice(0, 7);
@@ -76,8 +83,6 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react(), clientTracePlugin()],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         __APP_VERSION__: JSON.stringify(appVersion),
         __APP_COMMIT_SHA__: JSON.stringify(commitSha),
         __APP_BUILD_DATE__: JSON.stringify(buildDate),

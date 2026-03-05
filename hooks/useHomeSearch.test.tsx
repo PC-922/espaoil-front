@@ -73,7 +73,6 @@ describe('useHomeSearch', () => {
         searched: true,
         persistedAt: Date.now(),
         searchMode: 'address',
-        addressQuery: 'Gran Vía 1, Madrid',
       })
     );
 
@@ -84,7 +83,7 @@ describe('useHomeSearch', () => {
     expect(result.current.sortBy).toBe('distance');
     expect(result.current.searched).toBe(true);
     expect(result.current.searchMode).toBe('address');
-    expect(result.current.addressQuery).toBe('Gran Vía 1, Madrid');
+    expect(result.current.addressQuery).toBe('');
     expect(result.current.sortedStations).toHaveLength(1);
     expect(result.current.sortedStations[0].distance).toBe(2.2);
   });
@@ -132,7 +131,6 @@ describe('useHomeSearch', () => {
         searched: true,
         persistedAt: Date.now() - 31 * 60 * 1000,
         searchMode: 'location',
-        addressQuery: '',
       })
     );
 

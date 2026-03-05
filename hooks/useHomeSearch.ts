@@ -15,7 +15,6 @@ interface HomePersistedState {
   searched: boolean;
   persistedAt: number;
   searchMode: SearchMode;
-  addressQuery: string;
 }
 
 type SearchMode = 'location' | 'address';
@@ -41,7 +40,6 @@ const getStoredHomeState = (): HomePersistedState | null => {
     const isValidStations = Array.isArray(parsed.stations);
     const isValidSearched = typeof parsed.searched === 'boolean';
     const isValidSearchMode = parsed.searchMode === 'location' || parsed.searchMode === 'address';
-    const isValidAddressQuery = typeof parsed.addressQuery === 'string';
 
     if (isValidPersistedAt && 
       isValidFuelType &&
@@ -49,8 +47,7 @@ const getStoredHomeState = (): HomePersistedState | null => {
       isValidRadius &&
       isValidStations &&
       isValidSearched &&
-      isValidSearchMode &&
-      isValidAddressQuery
+      isValidSearchMode
     ) {
       if (Date.now() - parsed.persistedAt >= HOME_STATE_TTL_MS) {
         localStorage.removeItem(HOME_STATE_STORAGE_KEY);
@@ -64,7 +61,6 @@ const getStoredHomeState = (): HomePersistedState | null => {
         searched: parsed.searched,
         persistedAt: parsed.persistedAt,
         searchMode: parsed.searchMode,
-        addressQuery: parsed.addressQuery,
       };
     }
   } catch {
@@ -96,7 +92,7 @@ const getGeolocationErrorMessage = (error: GeolocationPositionError): string => 
 export const useHomeSearch = () => {
   const [storedState] = useState<HomePersistedState | null>(() => getStoredHomeState());
   const [searchMode, setSearchMode] = useState<SearchMode>(storedState?.searchMode ?? 'location');
-  const [addressQuery, setAddressQuery] = useState<string>(storedState?.addressQuery ?? '');
+  const [addressQuery, setAddressQuery] = useState<string>('');
   const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState<boolean>(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState<AddressSuggestion | null>(null);
@@ -119,7 +115,6 @@ export const useHomeSearch = () => {
       searched,
       persistedAt: Date.now(),
       searchMode,
-      addressQuery,
     };
 
     try {
@@ -127,7 +122,7 @@ export const useHomeSearch = () => {
     } catch {
       // noop
     }
-  }, [fuelType, radius, sortBy, stations, searched, searchMode, addressQuery]);
+  }, [fuelType, radius, sortBy, stations, searched, searchMode]);
 
   const sortedStations = useMemo(() => {
     return [...stations].sort((a, b) => {

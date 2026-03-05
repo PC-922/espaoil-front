@@ -18,7 +18,7 @@ React web/PWA app to search nearby gas stations, compare by price or distance, a
 - Vite 6
 - Tailwind (utility classes in components)
 - Vitest + Testing Library (unit tests)
-- Semantic Release (automated versioning and changelog)
+- Release Please (automated release PR + tagging)
 
 ## Requirements
 
@@ -49,8 +49,6 @@ The app runs at `http://localhost:3000`.
 - `npm run test`: run unit tests.
 - `npm run test:watch`: run tests in watch mode.
 - `npm run test:coverage`: run tests with coverage (global threshold 70%).
-- `npm run release`: run automated release with semantic-release.
-- `npm run release:dry`: simulate release.
 
 ## API and configuration
 
@@ -69,26 +67,25 @@ The app runs at `http://localhost:3000`.
 
 ## Versioning and releases
 
-The project uses `semantic-release` with `conventional commits`.
+The project uses `release-please` on GitHub Actions.
 
 - Release branch: `main`.
 - Tag format: `vX.Y.Z`.
 - Automatically updates:
    - `package.json`
-   - `package-lock.json`
    - `CHANGELOG.md`
-- Publishes a GitHub release.
+- Creates/updates a Release PR and publishes GitHub releases when merged.
 
 Workflow configured in `.github/workflows/release.yml`:
 
 1. `npm ci`
 2. `npm run test`
 3. `npm run build`
-4. `npm run release`
+4. `release-please-action`
 
 ### Note about local release runs
 
-`npm run release:dry` can fail locally if `GITHUB_TOKEN`/`GH_TOKEN` is missing or no Git remote is configured. In CI (GitHub Actions), `secrets.GITHUB_TOKEN` is used.
+Releases are managed in CI via `release-please-action` using `secrets.GITHUB_TOKEN`.
 
 ## Relevant structure
 
