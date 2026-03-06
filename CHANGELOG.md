@@ -4,6 +4,18 @@
 
 * add address search mode with suggestions and geocoding functionality ([0f97465](https://github.com/PC-922/espaoil-front/commit/0f974650c29934565cf13cea3ba1884fe19052af))
 
+## [1.2.0](https://github.com/PC-922/espaoil-front/compare/v1.1.0...v1.2.0) (2026-03-06)
+
+
+### Features
+
+* enhance security headers in vercel.json ([a88ab31](https://github.com/PC-922/espaoil-front/commit/a88ab31772a12baeeb5b69cafc55c28f00af5469))
+
+
+### Bug Fixes
+
+* improve client trace plugin in vite.config.ts ([a88ab31](https://github.com/PC-922/espaoil-front/commit/a88ab31772a12baeeb5b69cafc55c28f00af5469))
+
 ## [1.0.1](https://github.com/PC-922/espaoil-front/compare/v1.0.0...v1.0.1) (2026-02-27)
 
 ### Bug Fixes
