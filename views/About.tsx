@@ -18,7 +18,6 @@ export const About: React.FC = () => {
         </p>
         <div className="border-t border-gray-100 pt-4 mt-4">
           <p className="text-sm font-semibold text-gray-800">Versión {__APP_VERSION__}</p>
-          <p className="text-xs text-gray-500 mt-1">Commit: {__APP_COMMIT_SHA__}</p>
           <p className="text-xs text-gray-500 mt-1">Build: {formattedBuildDate}</p>
         </div>
       </div>
