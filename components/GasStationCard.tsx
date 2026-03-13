@@ -19,15 +19,20 @@ export const GasStationCard: React.FC<Props> = ({ station }) => {
           <div className="bg-red-50 text-red-600 p-3 rounded-xl h-12 w-12 flex items-center justify-center shrink-0">
             <Fuel size={24} />
           </div>
-          <div>
+          <div className="min-w-0 flex flex-col gap-2">
             <h3 className="font-bold text-gray-900 uppercase leading-tight">{station.trader}</h3>
-            <p className="text-sm text-gray-500 line-clamp-1">{station.name}, {station.municipality}</p>
-            <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
-              <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">{station.schedule}</span>
+            <p className="text-sm text-gray-500 line-clamp-2">{station.name}</p>
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
+                {station.municipality}
+              </span>
+              <div className="flex items-center gap-1 text-xs text-gray-500 font-medium whitespace-nowrap">
+                <Navigation size={12} />
+                <span>{formatDistance(station.distance)}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1 mt-1 text-xs text-gray-500 font-medium">
-              <Navigation size={12} />
-              <span>{formatDistance(station.distance)}</span>
+            <div className="flex items-center gap-1 text-xs text-gray-400">
+              <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">{station.schedule}</span>
             </div>
           </div>
         </div>
