@@ -3,6 +3,7 @@ import { Fuel, Navigation } from 'lucide-react';
 import { GasStationModel, MAP_PROVIDER_LABELS } from '../types';
 import { formatDistance, formatPrice } from '../utils/geo';
 import { buildMapUrl, getMapProvider } from '../utils/maps';
+import { ScheduleBadge } from './ScheduleBadge';
 
 interface Props {
   station: GasStationModel;
@@ -31,9 +32,7 @@ export const GasStationCard: React.FC<Props> = ({ station }) => {
                 <span>{formatDistance(station.distance)}</span>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-xs text-gray-400">
-              <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">{station.schedule}</span>
-            </div>
+            <ScheduleBadge schedule={station.schedule} />
           </div>
         </div>
         
