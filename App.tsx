@@ -4,6 +4,7 @@ import { About } from './views/About';
 import { Settings } from './views/Settings';
 import { BottomNav } from './components/BottomNav';
 import { InstallPwaPrompt } from './components/InstallPwaPrompt';
+import { Analytics } from '@vercel/analytics/react';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'home' | 'about' | 'settings'>('home');
@@ -18,6 +19,8 @@ const App: React.FC = () => {
       
       {/* PWA Install Prompt - Smartly shows only when needed */}
       <InstallPwaPrompt />
+
+      <Analytics />
       
       <BottomNav currentView={currentView} onViewChange={setCurrentView} />
     </div>
