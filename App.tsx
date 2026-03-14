@@ -5,6 +5,7 @@ import { Settings } from './views/Settings';
 import { BottomNav } from './components/BottomNav';
 import { InstallPwaPrompt } from './components/InstallPwaPrompt';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'home' | 'about' | 'settings'>('home');
@@ -21,6 +22,7 @@ const App: React.FC = () => {
       <InstallPwaPrompt />
 
       <Analytics />
+      <SpeedInsights />
       
       <BottomNav currentView={currentView} onViewChange={setCurrentView} />
     </div>
