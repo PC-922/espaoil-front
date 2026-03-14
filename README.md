@@ -53,7 +53,7 @@ The app runs at `http://localhost:3000`.
 ## API and configuration
 
 - Frontend consumes `'/api'` (see `config.ts`).
-- In development, Vite proxies requests to `https://espaoil-server.onrender.com`.
+- In development, Vite proxies requests to `https://espaoilserver.padyserveroracle.duckdns.org`.
 - Default parameters:
    - `DEFAULT_SEARCH_RADIUS_KM = 20`
    - `DEFAULT_FUEL_TYPE = GASOLINA_95_E5`
