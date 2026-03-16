@@ -5,7 +5,6 @@ import { FuelType, GasStationModel, SortOption } from '../types';
 import { AddressSuggestion, geocodeAddress, searchAddressSuggestions } from '../utils/geocoding';
 
 const HOME_STATE_STORAGE_KEY = 'espaoil.homeState';
-const HOME_STATE_TTL_MS = 30 * 60 * 1000;
 
 interface HomePersistedState {
   fuelType: FuelType;
@@ -13,7 +12,6 @@ interface HomePersistedState {
   sortBy: SortOption;
   stations: GasStationModel[];
   searched: boolean;
-  persistedAt: number;
   searchMode: SearchMode;
 }
 
@@ -21,17 +19,12 @@ type SearchMode = 'location' | 'address';
 
 const getStoredHomeState = (): HomePersistedState | null => {
   try {
-    const raw = localStorage.getItem(HOME_STATE_STORAGE_KEY);
+    const raw = sessionStorage.getItem(HOME_STATE_STORAGE_KEY);
     if (!raw) {
       return null;
     }
 
     const parsed = JSON.parse(raw) as Partial<HomePersistedState>;
-    const isValidPersistedAt =
-      typeof parsed.persistedAt === 'number' &&
-      Number.isFinite(parsed.persistedAt) &&
-      parsed.persistedAt > 0 &&
-      parsed.persistedAt <= Date.now();
     const isValidFuelType =
       typeof parsed.fuelType === 'string' &&
       Object.values(FuelType).includes(parsed.fuelType as FuelType);
@@ -41,7 +34,7 @@ const getStoredHomeState = (): HomePersistedState | null => {
     const isValidSearched = typeof parsed.searched === 'boolean';
     const isValidSearchMode = parsed.searchMode === 'location' || parsed.searchMode === 'address';
 
-    if (isValidPersistedAt && 
+    if (
       isValidFuelType &&
       isValidSort &&
       isValidRadius &&
@@ -49,20 +42,17 @@ const getStoredHomeState = (): HomePersistedState | null => {
       isValidSearched &&
       isValidSearchMode
     ) {
-      if (Date.now() - parsed.persistedAt >= HOME_STATE_TTL_MS) {
-        localStorage.removeItem(HOME_STATE_STORAGE_KEY);
-        return null;
-      }
       return {
         fuelType: parsed.fuelType as FuelType,
         radius: parsed.radius,
         sortBy: parsed.sortBy,
         stations: parsed.stations as GasStationModel[],
         searched: parsed.searched,
-        persistedAt: parsed.persistedAt,
         searchMode: parsed.searchMode,
       };
     }
+
+    sessionStorage.removeItem(HOME_STATE_STORAGE_KEY);
   } catch {
     // noop
   }
@@ -113,7 +103,6 @@ export const useHomeSearch = () => {
       sortBy,
       stations,
       searched,
-      persistedAt: Date.now(),
       searchMode,
     };
 
@@ -122,7 +111,7 @@ export const useHomeSearch = () => {
 
     const persistState = () => {
       try {
-        localStorage.setItem(HOME_STATE_STORAGE_KEY, JSON.stringify(stateToPersist));
+        sessionStorage.setItem(HOME_STATE_STORAGE_KEY, JSON.stringify(stateToPersist));
       } catch {
         // noop
       }

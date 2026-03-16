@@ -52,6 +52,7 @@ const sampleStation = (overrides?: Partial<GasStationModel>): GasStationModel =>
 describe('useHomeSearch', () => {
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
     vi.clearAllMocks();
     mockSearchAddressSuggestions.mockResolvedValue([]);
     vi.spyOn(window, 'alert').mockImplementation(() => undefined);
@@ -62,8 +63,8 @@ describe('useHomeSearch', () => {
     });
   });
 
-  it('restaura el estado persistido desde localStorage', () => {
-    localStorage.setItem(
+  it('restaura el estado persistido desde sessionStorage', () => {
+    sessionStorage.setItem(
       'espaoil.homeState',
       JSON.stringify({
         fuelType: FuelType.GASOIL_A,
@@ -71,7 +72,6 @@ describe('useHomeSearch', () => {
         sortBy: 'distance',
         stations: [sampleStation({ distance: 2.2 })],
         searched: true,
-        persistedAt: Date.now(),
         searchMode: 'address',
       })
     );
@@ -120,16 +120,15 @@ describe('useHomeSearch', () => {
     expect(result.current.stations).toHaveLength(2);
   });
 
-  it('ignora el estado persistido cuando supera 30 minutos', () => {
-    localStorage.setItem(
+  it('ignora el estado persistido cuando tiene forma invalida', () => {
+    sessionStorage.setItem(
       'espaoil.homeState',
       JSON.stringify({
         fuelType: FuelType.GASOIL_A,
         radius: 35,
-        sortBy: 'distance',
+        sortBy: 'invalid-sort',
         stations: [sampleStation({ distance: 2.2 })],
         searched: true,
-        persistedAt: Date.now() - 31 * 60 * 1000,
         searchMode: 'location',
       })
     );
