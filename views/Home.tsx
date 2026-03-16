@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { LocateFixed, MapPin, Search } from 'lucide-react';
 import { FuelType, FUEL_LABELS } from '../types';
 import { Button } from '../components/Button';
@@ -27,6 +27,15 @@ export const Home: React.FC = () => {
     sortedStations,
     handleSearch,
   } = useHomeSearch();
+
+  const stationKeyByRef = useMemo(() => {
+    return new Map(
+      stations.map((station, index) => [
+        station,
+        `${station.numericLat}-${station.numericLon}-${station.trader}-${station.name}-${index}`,
+      ])
+    );
+  }, [stations]);
 
   return (
     <div className="pb-24 pt-4 px-4 max-w-md mx-auto">
@@ -198,8 +207,11 @@ export const Home: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {sortedStations.map((station, index) => (
-                <GasStationCard key={`${station.latitude}-${station.longitude}-${index}`} station={station} />
+              {sortedStations.map((station) => (
+                <GasStationCard
+                  key={stationKeyByRef.get(station) ?? `${station.numericLat}-${station.numericLon}-${station.trader}-${station.name}`}
+                  station={station}
+                />
               ))}
             </div>
           )}

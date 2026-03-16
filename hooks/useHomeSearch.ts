@@ -117,11 +117,38 @@ export const useHomeSearch = () => {
       searchMode,
     };
 
-    try {
-      localStorage.setItem(HOME_STATE_STORAGE_KEY, JSON.stringify(stateToPersist));
-    } catch {
-      // noop
+    let idleCallbackId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    const persistState = () => {
+      try {
+        localStorage.setItem(HOME_STATE_STORAGE_KEY, JSON.stringify(stateToPersist));
+      } catch {
+        // noop
+      }
+    };
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      idleCallbackId = (window as Window & { requestIdleCallback: (cb: () => void, options?: { timeout: number }) => number }).requestIdleCallback(
+        persistState,
+        { timeout: 500 }
+      );
+    } else {
+      timeoutId = globalThis.setTimeout(persistState, 0);
     }
+
+    return () => {
+      if (
+        typeof window !== 'undefined' &&
+        'cancelIdleCallback' in window &&
+        typeof idleCallbackId === 'number'
+      ) {
+        (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleCallbackId);
+      }
+      if (typeof timeoutId !== 'undefined') {
+        globalThis.clearTimeout(timeoutId);
+      }
+    };
   }, [fuelType, radius, sortBy, stations, searched, searchMode]);
 
   const sortedStations = useMemo(() => {
@@ -135,6 +162,7 @@ export const useHomeSearch = () => {
 
   useEffect(() => {
     let cancelled = false;
+    let debounceId: number | undefined;
 
     const run = async () => {
       if (searchMode !== 'address') {
@@ -145,6 +173,12 @@ export const useHomeSearch = () => {
 
       const trimmedAddress = addressQuery.trim();
       if (trimmedAddress.length < 3) {
+        setAddressSuggestions([]);
+        setSuggestionsLoading(false);
+        return;
+      }
+
+      if (selectedSuggestion && selectedSuggestion.label.trim() === trimmedAddress) {
         setAddressSuggestions([]);
         setSuggestionsLoading(false);
         return;
@@ -167,12 +201,17 @@ export const useHomeSearch = () => {
       }
     };
 
-    run();
+    debounceId = window.setTimeout(() => {
+      run();
+    }, 300);
 
     return () => {
       cancelled = true;
+      if (typeof debounceId === 'number') {
+        window.clearTimeout(debounceId);
+      }
     };
-  }, [searchMode, addressQuery]);
+  }, [searchMode, addressQuery, selectedSuggestion]);
 
   const handleAddressQueryChange = (value: string) => {
     setAddressQuery(value);
@@ -185,6 +224,7 @@ export const useHomeSearch = () => {
     setAddressQuery(suggestion.label);
     setSelectedSuggestion(suggestion);
     setAddressSuggestions([]);
+    setSuggestionsLoading(false);
   };
 
   const handleSearch = async () => {

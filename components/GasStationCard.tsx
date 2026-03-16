@@ -9,7 +9,7 @@ interface Props {
   station: GasStationModel;
 }
 
-export const GasStationCard: React.FC<Props> = ({ station }) => {
+export const GasStationCard: React.FC<Props> = React.memo(({ station }) => {
   const mapProvider = getMapProvider();
   const mapsUrl = buildMapUrl(mapProvider, station.numericLat, station.numericLon);
 
@@ -56,4 +56,6 @@ export const GasStationCard: React.FC<Props> = ({ station }) => {
       </div>
     </div>
   );
-};
+});
+
+GasStationCard.displayName = 'GasStationCard';

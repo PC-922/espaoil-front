@@ -21,6 +21,8 @@ export interface ScheduleLiveStatus {
 const DAY_BLOCK_REGEX = /^([^:]+?)\s*:\s*(.+)$/;
 const DAY_WITH_24H_REGEX = /^([A-Za-zÁÉÍÓÚÑ\-\s]+?)\s+(24\s*H|24\/7)$/i;
 const HOURS_RANGE_REGEX = /^\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2}$/;
+const PARSE_SCHEDULE_CACHE_MAX_SIZE = 200;
+const parseScheduleCache = new Map<string, ParsedSchedule>();
 const DAY_ORDER = ['L', 'M', 'X', 'J', 'V', 'S', 'D'] as const;
 const DAY_TOKEN_TO_INDEX: Record<string, number> = {
   L: 1,
@@ -373,13 +375,20 @@ export const getScheduleLiveStatus = (parsed: ParsedSchedule, now = new Date()):
 export const parseSchedule = (schedule: string): ParsedSchedule => {
   const raw = normalizeText(schedule || '');
 
+  const cached = parseScheduleCache.get(raw);
+  if (cached) {
+    return cached;
+  }
+
   if (!raw) {
-    return {
+    const empty: ParsedSchedule = {
       raw,
       is24h: false,
       blocks: [],
       confidence: 'low',
     };
+    parseScheduleCache.set(raw, empty);
+    return empty;
   }
 
   const segments = splitSegments(raw);
@@ -432,10 +441,20 @@ export const parseSchedule = (schedule: string): ParsedSchedule => {
     blocks.every((block) => is24hToken(block.hours)) &&
     (blocks.some((block) => block.days.toUpperCase() === 'L-D') || blocks.length === 1 || has24hBlock);
 
-  return {
+  const parsed: ParsedSchedule = {
     raw,
     is24h,
     blocks,
     confidence: lowConfidence ? 'low' : 'high',
   };
+
+  if (parseScheduleCache.size >= PARSE_SCHEDULE_CACHE_MAX_SIZE) {
+    const firstKey = parseScheduleCache.keys().next().value;
+    if (typeof firstKey === 'string') {
+      parseScheduleCache.delete(firstKey);
+    }
+  }
+
+  parseScheduleCache.set(raw, parsed);
+  return parsed;
 };

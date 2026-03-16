@@ -165,6 +165,7 @@ describe('useHomeSearch', () => {
   });
 
   it('usa la sugerencia seleccionada para buscar sin geocodificar de nuevo', async () => {
+    vi.useFakeTimers();
     mockSearchAddressSuggestions.mockResolvedValue([
       { label: 'Gran Vía, Madrid, España', lat: 40.42, lon: -3.7 },
     ]);
@@ -172,31 +173,36 @@ describe('useHomeSearch', () => {
 
     const { result } = renderHook(() => useHomeSearch());
 
-    act(() => {
-      result.current.setSearchMode('address');
-      result.current.handleAddressQueryChange('Gran Vía');
-    });
-
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    act(() => {
-      result.current.handleSelectAddressSuggestion({
-        label: 'Gran Vía, Madrid, España',
-        lat: 40.42,
-        lon: -3.7,
+    try {
+      act(() => {
+        result.current.setSearchMode('address');
+        result.current.handleAddressQueryChange('Gran Vía');
       });
-    });
 
-    await act(async () => {
-      await result.current.handleSearch();
-    });
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+        await Promise.resolve();
+      });
 
-    expect(mockGeocodeAddress).not.toHaveBeenCalled();
-    expect(mockGetNearbyStations).toHaveBeenCalledWith(
-      expect.objectContaining({ lat: 40.42, lon: -3.7 })
-    );
+      act(() => {
+        result.current.handleSelectAddressSuggestion({
+          label: 'Gran Vía, Madrid, España',
+          lat: 40.42,
+          lon: -3.7,
+        });
+      });
+
+      await act(async () => {
+        await result.current.handleSearch();
+      });
+
+      expect(mockGeocodeAddress).not.toHaveBeenCalled();
+      expect(mockGetNearbyStations).toHaveBeenCalledWith(
+        expect.objectContaining({ lat: 40.42, lon: -3.7 })
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('muestra error si se busca por dirección sin texto', async () => {
@@ -215,6 +221,48 @@ describe('useHomeSearch', () => {
     expect(mockGeocodeAddress).not.toHaveBeenCalled();
     expect(mockGetNearbyStations).not.toHaveBeenCalled();
     expect(result.current.locationStatus).toBe('error');
+  });
+
+  it('no vuelve a cargar sugerencias tras seleccionar una dirección del desplegable', async () => {
+    vi.useFakeTimers();
+    mockSearchAddressSuggestions.mockResolvedValue([
+      { label: 'Gran Vía, Madrid, España', lat: 40.42, lon: -3.7 },
+    ]);
+
+    const { result } = renderHook(() => useHomeSearch());
+
+    try {
+      act(() => {
+        result.current.setSearchMode('address');
+        result.current.handleAddressQueryChange('Gran Vía');
+      });
+
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+        await Promise.resolve();
+      });
+
+      expect(mockSearchAddressSuggestions).toHaveBeenCalledTimes(1);
+
+      act(() => {
+        result.current.handleSelectAddressSuggestion({
+          label: 'Gran Vía, Madrid, España',
+          lat: 40.42,
+          lon: -3.7,
+        });
+      });
+
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+        await Promise.resolve();
+      });
+
+      expect(mockSearchAddressSuggestions).toHaveBeenCalledTimes(1);
+      expect(result.current.addressSuggestions).toEqual([]);
+      expect(result.current.suggestionsLoading).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('marca error si geolocalización no está disponible', async () => {

@@ -2,23 +2,31 @@ import { MapProvider } from '../types';
 
 const MAP_PROVIDER_STORAGE_KEY = 'espaoil.mapProvider';
 const DEFAULT_MAP_PROVIDER: MapProvider = 'google';
+let cachedMapProvider: MapProvider | null = null;
 
 export const getMapProvider = (): MapProvider => {
+  if (cachedMapProvider) {
+    return cachedMapProvider;
+  }
+
   try {
     const value = localStorage.getItem(MAP_PROVIDER_STORAGE_KEY);
     if (value === 'google' || value === 'apple' || value === 'waze') {
+      cachedMapProvider = value;
       return value;
     }
   } catch {
     // noop
   }
 
+  cachedMapProvider = DEFAULT_MAP_PROVIDER;
   return DEFAULT_MAP_PROVIDER;
 };
 
 export const setMapProvider = (provider: MapProvider): void => {
   try {
     localStorage.setItem(MAP_PROVIDER_STORAGE_KEY, provider);
+    cachedMapProvider = provider;
   } catch {
     // noop
   }
