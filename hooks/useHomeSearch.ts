@@ -106,37 +106,27 @@ export const useHomeSearch = () => {
       searchMode,
     };
 
-    let idleCallbackId: number | undefined;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    // Debounce rapid state changes (e.g. slider drag, repeated sort toggles) into
+    // a single write. The idle callback runs WITHOUT a forced timeout so it never
+    // executes during an active user interaction (which would inflate INP).
+    const debounceId = globalThis.setTimeout(() => {
+      const persistState = () => {
+        try {
+          sessionStorage.setItem(HOME_STATE_STORAGE_KEY, JSON.stringify(stateToPersist));
+        } catch {
+          // noop
+        }
+      };
 
-    const persistState = () => {
-      try {
-        sessionStorage.setItem(HOME_STATE_STORAGE_KEY, JSON.stringify(stateToPersist));
-      } catch {
-        // noop
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        (window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(persistState);
+      } else {
+        persistState();
       }
-    };
-
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      idleCallbackId = (window as Window & { requestIdleCallback: (cb: () => void, options?: { timeout: number }) => number }).requestIdleCallback(
-        persistState,
-        { timeout: 500 }
-      );
-    } else {
-      timeoutId = globalThis.setTimeout(persistState, 0);
-    }
+    }, 800);
 
     return () => {
-      if (
-        typeof window !== 'undefined' &&
-        'cancelIdleCallback' in window &&
-        typeof idleCallbackId === 'number'
-      ) {
-        (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleCallbackId);
-      }
-      if (typeof timeoutId !== 'undefined') {
-        globalThis.clearTimeout(timeoutId);
-      }
+      globalThis.clearTimeout(debounceId);
     };
   }, [fuelType, radius, sortBy, stations, searched, searchMode]);
 
