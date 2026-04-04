@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icon Generator</title>
+</head>
+<body>
+  <h1>Icon Generator - EspaOil</h1>
+  <p>Generando iconos PNG...</p>
+  <div id="status"></div>
+  <canvas id="canvas" style="display: none;"></canvas>
+
+  <script>
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="EspaOil app icon">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+  </defs>
+  
+  <circle cx="256" cy="256" r="256" fill="url(#bgGrad)"/>
+  <circle cx="256" cy="256" r="180" fill="#fee2e2" opacity="0.95"/>
+  
+  <g transform="translate(256 256)" fill="#dc2626">
+    <rect x="-50" y="-60" width="70" height="100" rx="8" stroke="#dc2626" stroke-width="3" fill="none"/>
+    <rect x="-42" y="-48" width="54" height="32" rx="4" fill="#dc2626"/>
+    <rect x="-56" y="38" width="82" height="8" rx="4" fill="#dc2626"/>
+    <path d="M 20 -10 L 38 -10 C 46 -10 52 -4 52 4 L 52 24 C 52 30 48 35 42 37 C 36 39 30 36 28 30 L 28 16 L 38 16 L 38 24 C 38 26 40 28 42 28 C 44 28 46 26 46 24 L 46 4 C 46 2 44 0 42 0 L 20 0 Z" fill="#dc2626"/>
+    <g transform="translate(50 -20)">
+      <circle cx="0" cy="0" r="3" fill="#dc2626"/>
+      <circle cx="8" cy="-6" r="2.5" fill="#dc2626"/>
+      <circle cx="14" cy="2" r="2" fill="#dc2626"/>
+    </g>
+  </g>
+</svg>`;
+
+    const sizes = [192, 512];
+    const status = document.getElementById('status');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function generateIcon(size) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+
+        img.onload = function() {
+          canvas.width = size;
+          canvas.height = size;
+          ctx.clearRect(0, 0, size, size);
+          ctx.drawImage(img, 0, 0, size, size);
+          
+          canvas.toBlob((blob) => {
+            const link = document.createElement('a');
+            link.download = `icon-${size}x${size}.png`;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            URL.revokeObjectURL(url);
+            resolve();
+          }, 'image/png');
+        };
+
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+
+    async function generateAll() {
+      for (const size of sizes) {
+        await generateIcon(size);
+        status.innerHTML += `<p>✓ Generado icon-${size}x${size}.png</p>`;
+      }
+      status.innerHTML += '<p><strong>¡Listo! Mueve los archivos descargados a public/icons/</strong></p>';
+    }
+
+    generateAll().catch(err => {
+      status.innerHTML = '<p style="color: red;">Error: ' + err.message + '</p>';
+    });
+  </script>
+</body>
+</html>
