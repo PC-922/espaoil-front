@@ -217,6 +217,36 @@ export const Home: React.FC = () => {
           )}
         </div>
       )}
+
+      <section className="mt-8 bg-white p-5 rounded-3xl shadow-sm border border-gray-100 space-y-3">
+        <h2 className="text-lg font-black text-gray-900">Gasolineras baratas cerca de ti</h2>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          EspaOil te ayuda a encontrar gasolineras baratas en Espana usando tu ubicacion actual o una direccion concreta.
+          Puedes comparar el precio de la gasolina hoy y ordenar resultados por distancia para tomar una decision rapida.
+        </p>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          Si quieres ahorrar al repostar, filtra por tipo de combustible y ajusta el radio de busqueda para descubrir
+          opciones cercanas con mejor precio. Tambien puedes abrir la ruta directamente en tu app de mapas favorita.
+        </p>
+      </section>
+
+      <section className="mt-4 bg-white p-5 rounded-3xl shadow-sm border border-gray-100 space-y-3">
+        <h2 className="text-lg font-black text-gray-900">Preguntas frecuentes</h2>
+        <div className="space-y-3 text-sm text-gray-600">
+          <div>
+            <h3 className="font-bold text-gray-800">Como encontrar gasolineras baratas cerca de mi?</h3>
+            <p>Activa tu ubicacion o escribe una direccion para ver estaciones cercanas y ordenarlas por precio o distancia.</p>
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-800">De donde salen los precios de gasolina?</h3>
+            <p>Los precios provienen de fuentes oficiales publicadas por el Ministerio para la Transicion Ecologica y el Reto Demografico.</p>
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-800">Cada cuanto se actualizan los precios?</h3>
+            <p>EspaOil muestra la informacion mas reciente disponible para cada estacion para facilitar una comparacion fiable.</p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

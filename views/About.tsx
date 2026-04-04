@@ -16,6 +16,10 @@ export const About: React.FC = () => {
         <p>
           Utilizamos datos del Ministerio para la Transición Ecológica y el Reto Demográfico. Se actualiza cada 2 horas.
         </p>
+        <p>
+          Nuestro objetivo es que puedas consultar el precio gasolina hoy en segundos, comparar por distancia y encontrar
+          gasolineras baratas cerca de ti con informacion clara y fiable.
+        </p>
         <div className="border-t border-gray-100 pt-4 mt-4">
           <p className="text-sm font-semibold text-gray-800">Versión {__APP_VERSION__}</p>
           <p className="text-xs text-gray-500 mt-1">Build: {formattedBuildDate}</p>
