@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo } from 'react';
-import { LocateFixed, MapPin, Search } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LocateFixed, MapPin, Search, X } from 'lucide-react';
 import { FuelType, FUEL_LABELS } from '../types';
 import { Button } from '../components/Button';
 import { GasStationCard } from '../components/GasStationCard';
@@ -27,6 +27,8 @@ export const Home: React.FC = () => {
     sortedStations,
     handleSearch,
   } = useHomeSearch();
+  const addressFieldRef = useRef<HTMLDivElement | null>(null);
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
 
   const stationKeyByRef = useMemo(() => {
     return new Map(
@@ -51,9 +53,47 @@ export const Home: React.FC = () => {
   const handleSortByPrice = useCallback(() => setSortBy('price'), [setSortBy]);
   const handleSortByDistance = useCallback(() => setSortBy('distance'), [setSortBy]);
   const handleAddressInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => handleAddressQueryChange(e.target.value),
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setIsSuggestionsOpen(true);
+      handleAddressQueryChange(e.target.value);
+    },
     [handleAddressQueryChange]
   );
+
+  const handleAddressInputFocus = useCallback(() => {
+    setIsSuggestionsOpen(true);
+  }, []);
+
+  const handleClearAddress = useCallback(() => {
+    handleAddressQueryChange('');
+    setIsSuggestionsOpen(false);
+  }, [handleAddressQueryChange]);
+
+  const handleAddressSuggestionSelect = useCallback(
+    (suggestion: (typeof addressSuggestions)[number]) => {
+      handleSelectAddressSuggestion(suggestion);
+      setIsSuggestionsOpen(false);
+    },
+    [addressSuggestions, handleSelectAddressSuggestion]
+  );
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!addressFieldRef.current) {
+        return;
+      }
+
+      if (!addressFieldRef.current.contains(event.target as Node)) {
+        setIsSuggestionsOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, []);
 
   // Extracción de banners de estado mutuamente excluyentes a una función de render.
   // Usar ternarios en lugar de && encadenados evita el riesgo de renderizar "0"
@@ -90,7 +130,7 @@ export const Home: React.FC = () => {
   // La condición usa booleano explícito para el dropdown de sugerencias,
   // evitando el riesgo de renderizar "0" si la expresión fuera numérica.
   const showSuggestionsDropdown =
-    addressQuery.trim().length >= 3 && (suggestionsLoading || addressSuggestions.length > 0);
+    isSuggestionsOpen && addressQuery.trim().length >= 3 && (suggestionsLoading || addressSuggestions.length > 0);
 
   const hasResults = searched && !loading && stations.length > 0;
 
@@ -124,18 +164,32 @@ export const Home: React.FC = () => {
         </div>
 
         {searchMode === 'address' && (
-          <div className="ui-slide-down relative">
+          <div ref={addressFieldRef} className="ui-slide-down relative z-30">
             <label className="mb-2 block text-[11px] font-bold uppercase tracking-wide text-gray-600">Direccion</label>
-            <input
-              type="text"
-              value={addressQuery}
-              onChange={handleAddressInputChange}
-              placeholder="Ej: Gran Via 1, Madrid"
-              className="ui-input px-3 py-2.5 text-sm font-semibold focus:outline-none"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={addressQuery}
+                onChange={handleAddressInputChange}
+                onFocus={handleAddressInputFocus}
+                placeholder="Ej: Gran Via 1, Madrid"
+                className="ui-input px-3 py-2.5 pr-10 text-sm font-semibold focus:outline-none"
+              />
+
+              {addressQuery.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearAddress}
+                  className="ui-radius-badge absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                  aria-label="Borrar direccion"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
 
             {showSuggestionsDropdown && (
-              <div className="ui-radius-control absolute left-0 right-0 z-20 mt-1.5 max-h-56 overflow-auto border border-[var(--color-border)] bg-white">
+              <div className="ui-radius-control absolute left-0 right-0 z-40 mt-1.5 max-h-56 overflow-auto border border-[var(--color-border)] bg-white shadow-lg">
                 {suggestionsLoading && <div className="px-3 py-2.5 text-sm text-gray-500">Buscando sugerencias...</div>}
 
                 {!suggestionsLoading &&
@@ -143,7 +197,7 @@ export const Home: React.FC = () => {
                     <button
                       key={`${suggestion.lat}-${suggestion.lon}-${index}`}
                       type="button"
-                      onClick={() => handleSelectAddressSuggestion(suggestion)}
+                      onClick={() => handleAddressSuggestionSelect(suggestion)}
                       className="w-full border-b border-gray-100 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 last:border-b-0"
                     >
                       {suggestion.label}
@@ -263,6 +317,15 @@ export const Home: React.FC = () => {
           <p>1. Busca con tu ubicacion o escribe una direccion.</p>
           <p>2. Ordena por precio para ahorrar o por distancia para llegar antes.</p>
           <p>3. Abre ruta en tu app de mapas favorita.</p>
+        </div>
+
+        <div className="ui-divider pt-3 text-sm text-gray-700">
+          <h3 className="font-bold text-gray-900">Informacion sobre los datos</h3>
+          <p className="mt-1.5">
+            Los precios y la informacion de las estaciones proceden de fuentes oficiales publicadas por el
+            Ministerio para la Transicion Ecologica y el Reto Demografico. Esta informacion se actualiza cada 2
+            horas.
+          </p>
         </div>
       </section>
     </div>
