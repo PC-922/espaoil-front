@@ -13,7 +13,7 @@ export const BottomNav: React.FC<Props> = ({ currentView, onViewChange }) => {
         <button
           type="button"
           onClick={() => onViewChange('home')}
-          className={`ui-nav-btn ui-radius-control flex min-h-[56px] flex-col items-center justify-center gap-1 px-2 transition-colors ${currentView === 'home' ? 'ui-nav-btn-active' : ''}`}
+          className={`ui-nav-btn flex min-h-[56px] flex-col items-center justify-center gap-1 px-2 transition-colors ${currentView === 'home' ? 'ui-nav-btn-active' : ''}`}
         >
           <Home size={20} />
           <span className="text-[11px] font-semibold">Inicio</span>
@@ -21,7 +21,7 @@ export const BottomNav: React.FC<Props> = ({ currentView, onViewChange }) => {
         <button
           type="button"
           onClick={() => onViewChange('settings')}
-          className={`ui-nav-btn ui-radius-control flex min-h-[56px] flex-col items-center justify-center gap-1 px-2 transition-colors ${currentView === 'settings' ? 'ui-nav-btn-active' : ''}`}
+          className={`ui-nav-btn flex min-h-[56px] flex-col items-center justify-center gap-1 px-2 transition-colors ${currentView === 'settings' ? 'ui-nav-btn-active' : ''}`}
         >
           <Settings size={20} />
           <span className="text-[11px] font-semibold">Ajustes</span>
