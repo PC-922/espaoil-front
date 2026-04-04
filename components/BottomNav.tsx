@@ -6,7 +6,7 @@ interface Props {
   onViewChange: (view: 'home' | 'settings') => void;
 }
 
-export const BottomNav: React.FC<Props> = ({ currentView, onViewChange }) => {
+export const BottomNav: React.FC<Props> = React.memo(({ currentView, onViewChange }) => {
   return (
     <div className="ui-bottom-nav fixed bottom-0 left-0 right-0 z-50 px-2 pb-safe pt-1">
       <div className="mx-auto grid w-full max-w-xl grid-cols-2 gap-1 px-2 py-1">
@@ -29,4 +29,6 @@ export const BottomNav: React.FC<Props> = ({ currentView, onViewChange }) => {
       </div>
     </div>
   );
-};
+});
+
+BottomNav.displayName = 'BottomNav';

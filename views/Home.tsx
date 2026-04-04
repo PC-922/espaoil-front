@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { LocateFixed, MapPin, Search } from 'lucide-react';
 import { FuelType, FUEL_LABELS } from '../types';
 import { Button } from '../components/Button';
@@ -37,6 +37,61 @@ export const Home: React.FC = () => {
     );
   }, [stations]);
 
+  // Handlers estables con useCallback para evitar recrearlos en cada render
+  const handleSetLocationMode = useCallback(() => setSearchMode('location'), [setSearchMode]);
+  const handleSetAddressMode = useCallback(() => setSearchMode('address'), [setSearchMode]);
+  const handleFuelTypeChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => setFuelType(e.target.value as FuelType),
+    [setFuelType]
+  );
+  const handleRadiusChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setRadius(parseInt(e.target.value, 10)),
+    [setRadius]
+  );
+  const handleSortByPrice = useCallback(() => setSortBy('price'), [setSortBy]);
+  const handleSortByDistance = useCallback(() => setSortBy('distance'), [setSortBy]);
+  const handleAddressInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleAddressQueryChange(e.target.value),
+    [handleAddressQueryChange]
+  );
+
+  // Extracción de banners de estado mutuamente excluyentes a una función de render.
+  // Usar ternarios en lugar de && encadenados evita el riesgo de renderizar "0"
+  // si alguna expresión fuera numérica, y hace explícito que los casos se excluyen.
+  const renderStatusBanner = () => {
+    if (locationStatus === 'idle' && !searched) {
+      return (
+        <div className="ui-radius-control mb-4 flex items-center justify-center gap-2 border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-gray-700">
+          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+          Listo para buscar
+        </div>
+      );
+    }
+    if (locationStatus === 'locating') {
+      return searchMode === 'location' ? (
+        <div className="ui-card flex flex-col items-center justify-center py-8 text-gray-500">
+          <div className="mb-3 text-red-400">
+            <MapPin size={48} />
+          </div>
+          <p>Obteniendo ubicación precisa...</p>
+        </div>
+      ) : (
+        <div className="ui-card flex flex-col items-center justify-center py-8 text-gray-500">
+          <div className="mb-3 text-red-400">
+            <Search size={48} />
+          </div>
+          <p>Buscando dirección...</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // La condición usa booleano explícito para el dropdown de sugerencias,
+  // evitando el riesgo de renderizar "0" si la expresión fuera numérica.
+  const showSuggestionsDropdown =
+    addressQuery.trim().length >= 3 && (suggestionsLoading || addressSuggestions.length > 0);
+
   return (
     <div className="ui-page">
       <header className="mb-4">
@@ -51,14 +106,14 @@ export const Home: React.FC = () => {
           <div className="ui-radius-control grid grid-cols-2 gap-1.5 bg-gray-100 p-1">
             <button
               type="button"
-              onClick={() => setSearchMode('location')}
+              onClick={handleSetLocationMode}
               className={`ui-radius-control border px-3 py-2 text-sm font-bold transition-colors ${searchMode === 'location' ? 'border-red-200 bg-[var(--color-accent-soft)] text-[var(--color-accent)]' : 'border-transparent text-gray-600'}`}
             >
               Mi ubicación
             </button>
             <button
               type="button"
-              onClick={() => setSearchMode('address')}
+              onClick={handleSetAddressMode}
               className={`ui-radius-control border px-3 py-2 text-sm font-bold transition-colors ${searchMode === 'address' ? 'border-red-200 bg-[var(--color-accent-soft)] text-[var(--color-accent)]' : 'border-transparent text-gray-600'}`}
             >
               Dirección
@@ -72,12 +127,12 @@ export const Home: React.FC = () => {
             <input
               type="text"
               value={addressQuery}
-              onChange={(e) => handleAddressQueryChange(e.target.value)}
+              onChange={handleAddressInputChange}
               placeholder="Ej: Gran Vía 1, Madrid"
               className="ui-input px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500"
             />
 
-            {addressQuery.trim().length >= 3 && (suggestionsLoading || addressSuggestions.length > 0) && (
+            {showSuggestionsDropdown && (
               <div className="ui-radius-control absolute left-0 right-0 z-20 mt-1.5 max-h-56 overflow-auto border border-[var(--color-border)] bg-white">
                 {suggestionsLoading && (
                   <div className="px-3 py-2.5 text-sm text-gray-400">Buscando sugerencias...</div>
@@ -104,7 +159,7 @@ export const Home: React.FC = () => {
           <div className="relative">
             <select
               value={fuelType}
-              onChange={(e) => setFuelType(e.target.value as FuelType)}
+              onChange={handleFuelTypeChange}
               className="ui-select appearance-none px-3 py-2.5 pr-9 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               {Object.entries(FUEL_LABELS).map(([key, label]) => (
@@ -122,19 +177,19 @@ export const Home: React.FC = () => {
             <label className="block text-[11px] font-bold uppercase tracking-wide text-gray-500">Radio de busqueda (km)</label>
             <span className="ui-radius-badge bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-900">{radius} km</span>
           </div>
-          <input 
-            type="range" 
-            min="1" 
-            max="100" 
-            value={radius} 
-            onChange={(e) => setRadius(parseInt(e.target.value))}
+          <input
+            type="range"
+            min="1"
+            max="100"
+            value={radius}
+            onChange={handleRadiusChange}
             className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-red-600"
           />
         </div>
 
-        <Button 
-          onClick={handleSearch} 
-          fullWidth 
+        <Button
+          onClick={handleSearch}
+          fullWidth
           disabled={loading}
         >
           {loading ? (
@@ -151,30 +206,7 @@ export const Home: React.FC = () => {
         </Button>
       </section>
 
-      {locationStatus === 'idle' && !searched && (
-         <div className="ui-radius-control mb-4 flex items-center justify-center gap-2 border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-gray-700">
-           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-           Listo para buscar
-          </div>
-      )}
-      
-      {locationStatus === 'locating' && searchMode === 'location' && (
-        <div className="ui-card flex flex-col items-center justify-center py-8 text-gray-500">
-          <div className="mb-3 text-red-400">
-             <MapPin size={48} />
-          </div>
-          <p>Obteniendo ubicación precisa...</p>
-        </div>
-      )}
-
-      {locationStatus === 'locating' && searchMode === 'address' && (
-        <div className="ui-card flex flex-col items-center justify-center py-8 text-gray-500">
-          <div className="mb-3 text-red-400">
-            <Search size={48} />
-          </div>
-          <p>Buscando dirección...</p>
-        </div>
-      )}
+      {renderStatusBanner()}
 
       {searched && !loading && (
         <div className="space-y-4">
@@ -186,16 +218,16 @@ export const Home: React.FC = () => {
             </div>
 
           <div className="ui-radius-control mb-3 grid grid-cols-2 gap-1.5 bg-gray-100 p-1">
-            <button 
+            <button
               type="button"
-              onClick={() => setSortBy('price')}
+              onClick={handleSortByPrice}
               className={`ui-radius-control border px-3 py-2 text-sm font-bold transition-colors ${sortBy === 'price' ? 'border-red-200 bg-[var(--color-accent-soft)] text-[var(--color-accent)]' : 'border-transparent text-gray-600'}`}
             >
               Precio
             </button>
-            <button 
+            <button
               type="button"
-              onClick={() => setSortBy('distance')}
+              onClick={handleSortByDistance}
               className={`ui-radius-control border px-3 py-2 text-sm font-bold transition-colors ${sortBy === 'distance' ? 'border-red-200 bg-[var(--color-accent-soft)] text-[var(--color-accent)]' : 'border-transparent text-gray-600'}`}
             >
               Distancia

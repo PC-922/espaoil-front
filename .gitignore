@@ -35,5 +35,8 @@ build
 *.swp
 *.swo
 
+# OpenCode agent skills (local dev tooling, not part of the project)
+.agents/
+
 # Vite
 *.tsbuildinfo

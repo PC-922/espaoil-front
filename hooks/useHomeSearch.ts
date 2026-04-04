@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CONFIG } from '../config';
-import { defaultGasStationRepository } from '../repositories/httpGasStationRepository';
+import { getGasStations } from '../services/gasStationService';
 import { FuelType, GasStationModel, SortOption } from '../types';
 import { AddressSuggestion, geocodeAddress, searchAddressSuggestions } from '../utils/geocoding';
 
@@ -44,11 +44,11 @@ const getStoredHomeState = (): HomePersistedState | null => {
     ) {
       return {
         fuelType: parsed.fuelType as FuelType,
-        radius: parsed.radius,
-        sortBy: parsed.sortBy,
+        radius: parsed.radius!,
+        sortBy: parsed.sortBy!,
         stations: parsed.stations as GasStationModel[],
-        searched: parsed.searched,
-        searchMode: parsed.searchMode,
+        searched: parsed.searched!,
+        searchMode: parsed.searchMode!,
       };
     }
 
@@ -80,7 +80,9 @@ const getGeolocationErrorMessage = (error: GeolocationPositionError): string => 
 };
 
 export const useHomeSearch = () => {
-  const [storedState] = useState<HomePersistedState | null>(() => getStoredHomeState());
+  // storedState solo se lee en el mount inicial, no necesita ser estado React
+  const storedState = useRef(getStoredHomeState()).current;
+
   const [searchMode, setSearchMode] = useState<SearchMode>(storedState?.searchMode ?? 'location');
   const [addressQuery, setAddressQuery] = useState<string>('');
   const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
@@ -192,21 +194,42 @@ export const useHomeSearch = () => {
     };
   }, [searchMode, addressQuery, selectedSuggestion]);
 
-  const handleAddressQueryChange = (value: string) => {
+  const handleAddressQueryChange = useCallback((value: string) => {
     setAddressQuery(value);
     if (selectedSuggestion?.label !== value.trim()) {
       setSelectedSuggestion(null);
     }
-  };
+  }, [selectedSuggestion]);
 
-  const handleSelectAddressSuggestion = (suggestion: AddressSuggestion) => {
+  const handleSelectAddressSuggestion = useCallback((suggestion: AddressSuggestion) => {
     setAddressQuery(suggestion.label);
     setSelectedSuggestion(suggestion);
     setAddressSuggestions([]);
     setSuggestionsLoading(false);
-  };
+  }, []);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
+    // Validaciones síncronas antes del bloque async
+    if (searchMode === 'address') {
+      const trimmedAddress = addressQuery.trim();
+      if (!trimmedAddress) {
+        setLocationStatus('error');
+        alert('Escribe una dirección para buscar.');
+        return;
+      }
+    } else {
+      if (!navigator.geolocation) {
+        setLocationStatus('error');
+        alert('La geolocalización no está soportada por tu navegador.');
+        return;
+      }
+      if (!window.isSecureContext) {
+        setLocationStatus('error');
+        alert('Para usar geolocalización en móvil debes abrir la app en HTTPS (o localhost).');
+        return;
+      }
+    }
+
     setLocationStatus('locating');
     setLoading(true);
 
@@ -216,11 +239,6 @@ export const useHomeSearch = () => {
 
       if (searchMode === 'address') {
         const trimmedAddress = addressQuery.trim();
-        if (!trimmedAddress) {
-          setLocationStatus('error');
-          alert('Escribe una dirección para buscar.');
-          return;
-        }
 
         if (selectedSuggestion && selectedSuggestion.label === trimmedAddress) {
           lat = selectedSuggestion.lat;
@@ -231,18 +249,6 @@ export const useHomeSearch = () => {
           lon = coordinates.lon;
         }
       } else {
-        if (!navigator.geolocation) {
-          alert('La geolocalización no está soportada por tu navegador.');
-          setLocationStatus('error');
-          return;
-        }
-
-        if (!window.isSecureContext) {
-          setLocationStatus('error');
-          alert('Para usar geolocalización en móvil debes abrir la app en HTTPS (o localhost).');
-          return;
-        }
-
         let position: GeolocationPosition;
 
         try {
@@ -251,7 +257,15 @@ export const useHomeSearch = () => {
             timeout: 10000,
             maximumAge: 0,
           });
-        } catch {
+        } catch (firstError) {
+          // Solo reintentar si NO es denegación de permisos — en ese caso el segundo
+          // intento también fallaría y haría esperar al usuario 20 segundos extra.
+          if (
+            firstError instanceof GeolocationPositionError &&
+            firstError.code === firstError.PERMISSION_DENIED
+          ) {
+            throw firstError;
+          }
           position = await getCurrentPosition({
             enableHighAccuracy: false,
             timeout: 20000,
@@ -264,7 +278,7 @@ export const useHomeSearch = () => {
       }
 
       setLocationStatus('success');
-      const data = await defaultGasStationRepository.getNearbyStations({
+      const data = await getGasStations({
         lat,
         lon,
         radiusKm: radius,
@@ -287,7 +301,7 @@ export const useHomeSearch = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchMode, addressQuery, selectedSuggestion, radius, fuelType]);
 
   return {
     searchMode,

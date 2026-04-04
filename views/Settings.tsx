@@ -1,18 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { MapPinned } from 'lucide-react';
 import { MAP_PROVIDER_LABELS, MapProvider } from '../types';
 import { getMapProvider, setMapProvider } from '../utils/maps';
 
-export const Settings: React.FC = () => {
-  const [provider, setProvider] = useState<MapProvider>('google');
-  const formattedBuildDate = new Date(__APP_BUILD_DATE__).toLocaleString('es-ES', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
+// Constante de módulo: __APP_BUILD_DATE__ es un valor de compilación que nunca
+// cambia en runtime, por lo que no tiene sentido recalcularlo en cada render.
+const FORMATTED_BUILD_DATE = new Date(__APP_BUILD_DATE__).toLocaleString('es-ES', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+});
 
-  useEffect(() => {
-    setProvider(getMapProvider());
-  }, []);
+export const Settings: React.FC = () => {
+  // Inicialización lazy: getMapProvider() es síncrono, no necesita useEffect.
+  // Esto evita el ciclo render→effect→setState→render que causaba un render extra.
+  const [provider, setProvider] = useState<MapProvider>(() => getMapProvider());
 
   const handleProviderChange = (nextProvider: MapProvider) => {
     setProvider(nextProvider);
@@ -57,7 +58,7 @@ export const Settings: React.FC = () => {
 
         <div className="border-t border-gray-100 pt-4">
           <p className="text-sm font-semibold text-gray-900">Version {__APP_VERSION__}</p>
-          <p className="mt-1 text-xs text-gray-500">Build {formattedBuildDate}</p>
+          <p className="mt-1 text-xs text-gray-500">Build {FORMATTED_BUILD_DATE}</p>
         </div>
       </div>
     </div>

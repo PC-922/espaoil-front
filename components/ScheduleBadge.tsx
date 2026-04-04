@@ -1,12 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Clock3 } from 'lucide-react';
 import { getScheduleLiveStatus, parseSchedule } from '../utils/schedule';
 
 interface Props {
   schedule: string;
 }
 
-export const ScheduleBadge: React.FC<Props> = ({ schedule }) => {
+export const ScheduleBadge: React.FC<Props> = React.memo(({ schedule }) => {
   const [showDetails, setShowDetails] = useState(false);
   const parsed = useMemo(() => parseSchedule(schedule), [schedule]);
   const liveStatus = useMemo(() => getScheduleLiveStatus(parsed), [parsed]);
@@ -56,4 +55,6 @@ export const ScheduleBadge: React.FC<Props> = ({ schedule }) => {
       )}
     </div>
   );
-};
+});
+
+ScheduleBadge.displayName = 'ScheduleBadge';

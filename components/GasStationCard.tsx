@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Fuel, Navigation } from 'lucide-react';
 import { GasStationModel, MAP_PROVIDER_LABELS } from '../types';
 import { formatDistance, formatPrice } from '../utils/geo';
@@ -11,7 +11,10 @@ interface Props {
 
 export const GasStationCard: React.FC<Props> = React.memo(({ station }) => {
   const mapProvider = getMapProvider();
-  const mapsUrl = buildMapUrl(mapProvider, station.numericLat, station.numericLon);
+  const mapsUrl = useMemo(
+    () => buildMapUrl(mapProvider, station.numericLat, station.numericLon),
+    [mapProvider, station.numericLat, station.numericLon]
+  );
 
   return (
     <article className="ui-card flex flex-col gap-2.5 p-3.5">

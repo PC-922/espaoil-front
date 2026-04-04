@@ -2,14 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { Download, Share, PlusSquare, X } from 'lucide-react';
 import { Button } from './Button';
 
-export const InstallPwaPrompt: React.FC = () => {
+// BeforeInstallPromptEvent no está en los tipos DOM estándar de TypeScript,
+// por lo que se declara localmente para evitar el uso de `any`.
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+export const InstallPwaPrompt: React.FC = React.memo(() => {
   const [isVisible, setIsVisible] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
     // 1. Check if already installed (Standalone mode)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone;
     if (isStandalone) return;
 
     // 2. Check if user previously dismissed the prompt
@@ -17,7 +26,7 @@ export const InstallPwaPrompt: React.FC = () => {
     if (hasDismissed) return;
 
     // 3. Detect iOS
-    const iosCheck = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const iosCheck = /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window);
     setIsIOS(iosCheck);
 
     if (iosCheck) {
@@ -27,7 +36,7 @@ export const InstallPwaPrompt: React.FC = () => {
       // 4. Capture 'beforeinstallprompt' event for Android/Chrome
       const handler = (e: Event) => {
         e.preventDefault();
-        setDeferredPrompt(e);
+        setDeferredPrompt(e as BeforeInstallPromptEvent);
         setIsVisible(true);
       };
 
@@ -43,7 +52,7 @@ export const InstallPwaPrompt: React.FC = () => {
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
-    deferredPrompt.prompt();
+    await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
       setDeferredPrompt(null);
@@ -91,4 +100,6 @@ export const InstallPwaPrompt: React.FC = () => {
       </div>
     </div>
   );
-};
+});
+
+InstallPwaPrompt.displayName = 'InstallPwaPrompt';
