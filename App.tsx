@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Home } from './views/Home';
-import { About } from './views/About';
 import { Settings } from './views/Settings';
 import { BottomNav } from './components/BottomNav';
 import { InstallPwaPrompt } from './components/InstallPwaPrompt';
@@ -8,7 +7,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'home' | 'about' | 'settings'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'settings'>('home');
 
   useEffect(() => {
     const ensureNamedMeta = (name: string, content: string): void => {
@@ -37,11 +36,6 @@ const App: React.FC = () => {
         description:
           'Encuentra gasolineras baratas cerca de ti en Espana, compara precio gasolina hoy por distancia o coste y llega rapido con Google Maps, Apple Maps o Waze.',
       },
-      about: {
-        title: 'Sobre EspaOil | Datos y actualizacion de precios de gasolina',
-        description:
-          'Descubre como funciona EspaOil, de donde obtiene los datos y cada cuanto se actualizan los precios de gasolina en Espana.',
-      },
       settings: {
         title: 'Ajustes de busqueda | EspaOil',
         description:
@@ -60,19 +54,17 @@ const App: React.FC = () => {
   }, [currentView]);
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
-      <main className="w-full">
+    <div className="ui-shell min-h-[100dvh]">
+      <main className="w-full pb-28">
         {currentView === 'home' && <Home />}
-        {currentView === 'about' && <About />}
         {currentView === 'settings' && <Settings />}
       </main>
-      
-      {/* PWA Install Prompt - Smartly shows only when needed */}
+
       <InstallPwaPrompt />
 
       <Analytics />
       <SpeedInsights />
-      
+
       <BottomNav currentView={currentView} onViewChange={setCurrentView} />
     </div>
   );

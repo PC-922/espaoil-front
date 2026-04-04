@@ -5,6 +5,10 @@ import { getMapProvider, setMapProvider } from '../utils/maps';
 
 export const Settings: React.FC = () => {
   const [provider, setProvider] = useState<MapProvider>('google');
+  const formattedBuildDate = new Date(__APP_BUILD_DATE__).toLocaleString('es-ES', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
 
   useEffect(() => {
     setProvider(getMapProvider());
@@ -16,12 +20,15 @@ export const Settings: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto pt-10">
-      <h1 className="text-2xl font-black text-gray-900 mb-6">Configuración</h1>
+    <div className="ui-page">
+      <header className="mb-4">
+        <h1 className="text-2xl font-black text-gray-900">Configuracion</h1>
+        <p className="mt-1 text-sm text-gray-600">Personaliza como quieres abrir las rutas desde los resultados.</p>
+      </header>
 
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-5 text-gray-700">
+      <div className="ui-card space-y-4 p-4 text-gray-700">
         <div className="flex items-start gap-3">
-          <div className="bg-red-50 text-red-600 p-2 rounded-lg">
+          <div className="ui-radius-control bg-[var(--color-accent-soft)] p-2 text-[var(--color-accent)]">
             <MapPinned size={18} />
           </div>
           <div>
@@ -34,7 +41,7 @@ export const Settings: React.FC = () => {
           {(Object.keys(MAP_PROVIDER_LABELS) as MapProvider[]).map((option) => (
             <label
               key={option}
-              className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${provider === option ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'}`}
+              className={`ui-radius-control flex min-h-12 items-center justify-between border p-3 transition-colors ${provider === option ? 'border-red-200 bg-[var(--color-accent-soft)]' : 'cursor-pointer border-[var(--color-border)] bg-white'}`}
             >
               <span className="font-semibold text-gray-800">{MAP_PROVIDER_LABELS[option]}</span>
               <input
@@ -46,6 +53,11 @@ export const Settings: React.FC = () => {
               />
             </label>
           ))}
+        </div>
+
+        <div className="border-t border-gray-100 pt-4">
+          <p className="text-sm font-semibold text-gray-900">Version {__APP_VERSION__}</p>
+          <p className="mt-1 text-xs text-gray-500">Build {formattedBuildDate}</p>
         </div>
       </div>
     </div>

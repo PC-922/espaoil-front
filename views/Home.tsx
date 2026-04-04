@@ -38,25 +38,28 @@ export const Home: React.FC = () => {
   }, [stations]);
 
   return (
-    <div className="pb-24 pt-4 px-4 max-w-md mx-auto">
-      <header className="text-center mb-6">
-        <h1 className="text-2xl font-black tracking-tight text-gray-900">EspaOil</h1>
+    <div className="ui-page">
+      <header className="mb-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-accent)]">EspaOil</p>
+        <h1 className="mt-1 text-[1.35rem] font-black leading-tight text-[var(--color-text)]">Gasolineras baratas cerca de ti</h1>
+        <p className="mt-1.5 text-sm text-gray-600">Compara por precio o distancia y abre ruta al instante.</p>
       </header>
 
-      {/* Controls Section */}
-      <section className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 space-y-4 mb-6">
+      <section className="ui-card mb-4 space-y-3 p-3.5">
         <div>
-          <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Modo de búsqueda</label>
-          <div className="flex gap-2 bg-gray-200 p-1 rounded-xl">
+          <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-gray-500">Modo de busqueda</label>
+          <div className="ui-radius-control grid grid-cols-2 gap-1.5 bg-gray-100 p-1">
             <button
+              type="button"
               onClick={() => setSearchMode('location')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${searchMode === 'location' ? 'bg-red-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-300'}`}
+              className={`ui-radius-control border px-3 py-2 text-sm font-bold transition-colors ${searchMode === 'location' ? 'border-red-200 bg-[var(--color-accent-soft)] text-[var(--color-accent)]' : 'border-transparent text-gray-600'}`}
             >
               Mi ubicación
             </button>
             <button
+              type="button"
               onClick={() => setSearchMode('address')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${searchMode === 'address' ? 'bg-red-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-300'}`}
+              className={`ui-radius-control border px-3 py-2 text-sm font-bold transition-colors ${searchMode === 'address' ? 'border-red-200 bg-[var(--color-accent-soft)] text-[var(--color-accent)]' : 'border-transparent text-gray-600'}`}
             >
               Dirección
             </button>
@@ -65,19 +68,19 @@ export const Home: React.FC = () => {
 
         {searchMode === 'address' && (
           <div className="relative">
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Dirección</label>
+            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-gray-500">Direccion</label>
             <input
               type="text"
               value={addressQuery}
               onChange={(e) => handleAddressQueryChange(e.target.value)}
               placeholder="Ej: Gran Vía 1, Madrid"
-              className="w-full bg-red-50 border border-red-100 text-red-900 font-semibold rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="ui-input px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500"
             />
 
             {addressQuery.trim().length >= 3 && (suggestionsLoading || addressSuggestions.length > 0) && (
-              <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-sm max-h-60 overflow-auto z-20">
+              <div className="ui-radius-control absolute left-0 right-0 z-20 mt-1.5 max-h-56 overflow-auto border border-[var(--color-border)] bg-white">
                 {suggestionsLoading && (
-                  <div className="px-3 py-2 text-sm text-gray-400">Buscando sugerencias...</div>
+                  <div className="px-3 py-2.5 text-sm text-gray-400">Buscando sugerencias...</div>
                 )}
 
                 {!suggestionsLoading &&
@@ -86,7 +89,7 @@ export const Home: React.FC = () => {
                       key={`${suggestion.lat}-${suggestion.lon}-${index}`}
                       type="button"
                       onClick={() => handleSelectAddressSuggestion(suggestion)}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-red-50 border-b border-gray-100 last:border-b-0"
+                      className="w-full border-b border-gray-100 px-3 py-2.5 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50 last:border-b-0"
                     >
                       {suggestion.label}
                     </button>
@@ -97,27 +100,27 @@ export const Home: React.FC = () => {
         )}
 
         <div>
-          <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Tipo de combustible</label>
+          <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-gray-500">Tipo de combustible</label>
           <div className="relative">
             <select
               value={fuelType}
               onChange={(e) => setFuelType(e.target.value as FuelType)}
-              className="w-full appearance-none bg-red-50 border border-red-100 text-red-900 font-semibold rounded-xl py-3 px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="ui-select appearance-none px-3 py-2.5 pr-9 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               {Object.entries(FUEL_LABELS).map(([key, label]) => (
                 <option key={key} value={key}>{label}</option>
               ))}
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-red-500">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
               <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
             </div>
           </div>
         </div>
 
         <div>
-          <div className="flex justify-between mb-2">
-            <label className="block text-xs font-bold text-gray-500 uppercase">Radio de búsqueda (km)</label>
-            <span className="text-xs font-bold text-gray-900 bg-gray-100 px-2 rounded">{radius} km</span>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label className="block text-[11px] font-bold uppercase tracking-wide text-gray-500">Radio de busqueda (km)</label>
+            <span className="ui-radius-badge bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-900">{radius} km</span>
           </div>
           <input 
             type="range" 
@@ -125,7 +128,7 @@ export const Home: React.FC = () => {
             max="100" 
             value={radius} 
             onChange={(e) => setRadius(parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-600"
+            className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-red-600"
           />
         </div>
 
@@ -148,17 +151,16 @@ export const Home: React.FC = () => {
         </Button>
       </section>
 
-      {/* Status Indicator */}
       {locationStatus === 'idle' && !searched && (
-         <div className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-8 animate-pulse">
+         <div className="ui-radius-control mb-4 flex items-center justify-center gap-2 border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-gray-700">
            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
            Listo para buscar
-         </div>
+          </div>
       )}
       
       {locationStatus === 'locating' && searchMode === 'location' && (
-        <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-          <div className="animate-bounce mb-4 text-red-200">
+        <div className="ui-card flex flex-col items-center justify-center py-8 text-gray-500">
+          <div className="mb-3 text-red-400">
              <MapPin size={48} />
           </div>
           <p>Obteniendo ubicación precisa...</p>
@@ -166,44 +168,45 @@ export const Home: React.FC = () => {
       )}
 
       {locationStatus === 'locating' && searchMode === 'address' && (
-        <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-          <div className="animate-pulse mb-4 text-red-200">
+        <div className="ui-card flex flex-col items-center justify-center py-8 text-gray-500">
+          <div className="mb-3 text-red-400">
             <Search size={48} />
           </div>
           <p>Buscando dirección...</p>
         </div>
       )}
 
-      {/* Results Section */}
       {searched && !loading && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-1 flex items-center justify-between">
              <h2 className="text-sm font-bold text-gray-900">Resultados ({stations.length})</h2>
-             <span className="text-xs text-gray-400">
-              {sortBy === 'price' ? 'más baratas primero' : 'más cercanas primero'}
-             </span>
-          </div>
+              <span className="text-xs text-gray-500">
+               {sortBy === 'price' ? 'más baratas primero' : 'más cercanas primero'}
+              </span>
+            </div>
 
-          <div className="flex gap-2 mb-4 bg-gray-200 p-1 rounded-xl">
+          <div className="ui-radius-control mb-3 grid grid-cols-2 gap-1.5 bg-gray-100 p-1">
             <button 
+              type="button"
               onClick={() => setSortBy('price')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${sortBy === 'price' ? 'bg-red-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-300'}`}
+              className={`ui-radius-control border px-3 py-2 text-sm font-bold transition-colors ${sortBy === 'price' ? 'border-red-200 bg-[var(--color-accent-soft)] text-[var(--color-accent)]' : 'border-transparent text-gray-600'}`}
             >
               Precio
             </button>
             <button 
+              type="button"
               onClick={() => setSortBy('distance')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${sortBy === 'distance' ? 'bg-red-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-300'}`}
+              className={`ui-radius-control border px-3 py-2 text-sm font-bold transition-colors ${sortBy === 'distance' ? 'border-red-200 bg-[var(--color-accent-soft)] text-[var(--color-accent)]' : 'border-transparent text-gray-600'}`}
             >
               Distancia
             </button>
           </div>
 
           {stations.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-gray-300">
-              <Search size={48} className="mx-auto text-gray-300 mb-2" />
-              <p className="text-gray-500 font-medium">No se encontraron gasolineras</p>
-              <p className="text-sm text-gray-400">Intenta aumentar el radio de búsqueda</p>
+             <div className="ui-card py-8 text-center border-dashed border-gray-300">
+               <Search size={48} className="mx-auto text-gray-300 mb-2" />
+               <p className="text-gray-500 font-medium">No se encontraron gasolineras</p>
+               <p className="text-sm text-gray-400">Intenta aumentar el radio de búsqueda</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -218,32 +221,23 @@ export const Home: React.FC = () => {
         </div>
       )}
 
-      <section className="mt-8 bg-white p-5 rounded-3xl shadow-sm border border-gray-100 space-y-3">
-        <h2 className="text-lg font-black text-gray-900">Gasolineras baratas cerca de ti</h2>
-        <p className="text-sm text-gray-600 leading-relaxed">
-          EspaOil te ayuda a encontrar gasolineras baratas en Espana usando tu ubicacion actual o una direccion concreta.
-          Puedes comparar el precio de la gasolina hoy y ordenar resultados por distancia para tomar una decision rapida.
+      <section className="ui-card mt-6 space-y-3 p-4">
+        <h2 className="text-lg font-black text-gray-900">Guia rapida</h2>
+        <p className="text-sm leading-relaxed text-gray-600">
+          EspaOil te permite encontrar gasolineras cercanas por ubicacion o direccion, filtrar por combustible y ordenar por precio o distancia para decidir mas rapido.
         </p>
-        <p className="text-sm text-gray-600 leading-relaxed">
-          Si quieres ahorrar al repostar, filtra por tipo de combustible y ajusta el radio de busqueda para descubrir
-          opciones cercanas con mejor precio. Tambien puedes abrir la ruta directamente en tu app de mapas favorita.
-        </p>
-      </section>
-
-      <section className="mt-4 bg-white p-5 rounded-3xl shadow-sm border border-gray-100 space-y-3">
-        <h2 className="text-lg font-black text-gray-900">Preguntas frecuentes</h2>
-        <div className="space-y-3 text-sm text-gray-600">
+        <div className="space-y-3 border-t border-gray-100 pt-3 text-sm text-gray-600">
           <div>
-            <h3 className="font-bold text-gray-800">Como encontrar gasolineras baratas cerca de mi?</h3>
-            <p>Activa tu ubicacion o escribe una direccion para ver estaciones cercanas y ordenarlas por precio o distancia.</p>
+            <h3 className="font-bold text-gray-800">Como ahorrar mas al repostar?</h3>
+            <p>Ordena por precio, ajusta el radio de busqueda y compara opciones cercanas antes de iniciar la ruta.</p>
           </div>
           <div>
-            <h3 className="font-bold text-gray-800">De donde salen los precios de gasolina?</h3>
-            <p>Los precios provienen de fuentes oficiales publicadas por el Ministerio para la Transicion Ecologica y el Reto Demografico.</p>
+            <h3 className="font-bold text-gray-800">De donde salen los precios?</h3>
+            <p>De fuentes oficiales publicadas por el Ministerio para la Transicion Ecologica y el Reto Demografico.</p>
           </div>
           <div>
-            <h3 className="font-bold text-gray-800">Cada cuanto se actualizan los precios?</h3>
-            <p>EspaOil muestra la informacion mas reciente disponible para cada estacion para facilitar una comparacion fiable.</p>
+            <h3 className="font-bold text-gray-800">Cada cuanto se actualiza la informacion?</h3>
+            <p>Mostramos la informacion mas reciente disponible para cada estacion para facilitar una comparacion fiable.</p>
           </div>
         </div>
       </section>

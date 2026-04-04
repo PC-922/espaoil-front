@@ -54,33 +54,31 @@ export const InstallPwaPrompt: React.FC = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 z-40 animate-[slideUp_0.3s_ease-out]">
-      <div className="bg-white rounded-2xl shadow-xl border border-red-100 overflow-hidden">
-        {/* Header Gradient */}
-        <div className="bg-gradient-to-r from-red-600 to-red-500 p-3 flex justify-between items-center text-white">
-          <div className="flex items-center gap-2 font-bold text-sm">
-            <Download size={18} />
-            <span>Instalar App</span>
+    <div className="fixed bottom-24 left-0 right-0 z-40 px-4">
+      <div className="ui-card mx-auto w-full max-w-xl overflow-hidden">
+        <div className="flex items-center justify-between border-b border-[var(--color-border)] p-3">
+          <div className="flex items-center gap-2 text-sm font-bold text-[var(--color-text)]">
+            <Download size={18} className="text-[var(--color-accent)]" />
+            <span>Instalar app</span>
           </div>
-          <button onClick={handleDismiss} className="text-white/80 hover:text-white p-1">
+          <button type="button" onClick={handleDismiss} className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700">
             <X size={18} />
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-4">
-          <p className="text-sm text-gray-600 mb-4 font-medium">
+          <p className="mb-3 text-sm font-medium text-gray-600">
             Instala EspaOil para acceder más rápido y usarla a pantalla completa.
           </p>
 
           {isIOS ? (
-            <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-600 border border-gray-100">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="bg-gray-200 p-1 rounded text-blue-500"><Share size={16} /></span>
+            <div className="ui-radius-control border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="ui-radius-badge bg-gray-200 p-1 text-blue-500"><Share size={16} /></span>
                 <span>1. Pulsa el botón <strong>Compartir</strong></span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="bg-gray-200 p-1 rounded text-gray-700"><PlusSquare size={16} /></span>
+                <span className="ui-radius-badge bg-gray-200 p-1 text-gray-700"><PlusSquare size={16} /></span>
                 <span>2. Selecciona <strong>Añadir a inicio</strong></span>
               </div>
             </div>

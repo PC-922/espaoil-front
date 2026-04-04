@@ -18,16 +18,16 @@ export const ScheduleBadge: React.FC<Props> = ({ schedule }) => {
   }
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       <div className="flex flex-wrap items-center gap-1.5 text-xs">
         {liveStatus.status === 'open' && (
-          <span className="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-700">
+          <span className="ui-radius-badge inline-flex items-center bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-700">
             Abierto ahora
           </span>
         )}
 
         {liveStatus.status === 'closed' && (
-          <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">
+          <span className="ui-radius-badge inline-flex items-center bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-600">
             Cerrado ahora
           </span>
         )}
@@ -44,7 +44,7 @@ export const ScheduleBadge: React.FC<Props> = ({ schedule }) => {
           <button
             type="button"
             onClick={() => setShowDetails((prev) => !prev)}
-            className="inline-flex items-center rounded-md px-1.5 py-0.5 font-semibold text-red-600 hover:text-red-700"
+            className="ui-radius-badge inline-flex min-h-8 items-center px-2 py-1 font-semibold text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
           >
             {showDetails ? 'Ocultar horario' : 'Ver horario'}
           </button>
@@ -52,7 +52,7 @@ export const ScheduleBadge: React.FC<Props> = ({ schedule }) => {
       </div>
 
       {showDetails && (
-        <div className="rounded-md bg-gray-50 px-2 py-1 text-xs text-gray-500">{parsed.raw}</div>
+        <div className="ui-radius-badge bg-gray-50 px-2.5 py-1.5 text-xs text-gray-500">{parsed.raw}</div>
       )}
     </div>
   );
