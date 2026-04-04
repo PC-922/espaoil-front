@@ -51,7 +51,7 @@ export const ScheduleBadge: React.FC<Props> = React.memo(({ schedule }) => {
       </div>
 
       {showDetails && (
-        <div className="ui-radius-badge bg-gray-50 px-2.5 py-1.5 text-xs text-gray-500">{parsed.raw}</div>
+        <div className="ui-radius-badge ui-slide-down bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-600">{parsed.raw}</div>
       )}
     </div>
   );

@@ -13,7 +13,7 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props 
 }) => {
-  const baseStyle = 'ui-radius-field flex min-h-12 items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition-colors duration-200 active:scale-[0.99] disabled:cursor-not-allowed';
+  const baseStyle = 'ui-radius-field flex min-h-12 items-center justify-center gap-2 px-4 py-3 text-sm font-bold transition-all duration-200 active:scale-[0.99] disabled:cursor-not-allowed';
   
   const variants = {
     primary: 'bg-[var(--color-accent)] text-white hover:brightness-95 disabled:bg-gray-300',

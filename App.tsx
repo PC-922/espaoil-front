@@ -55,7 +55,7 @@ const App: React.FC = () => {
 
   return (
     <div className="ui-shell min-h-[100dvh]">
-      <main className="w-full pb-28">
+      <main className="w-full">
         {currentView === 'home' && <Home />}
         {currentView === 'settings' && <Settings />}
       </main>

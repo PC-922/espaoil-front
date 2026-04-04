@@ -63,8 +63,8 @@ export const InstallPwaPrompt: React.FC = React.memo(() => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-24 left-0 right-0 z-40 px-4">
-      <div className="ui-card mx-auto w-full max-w-xl overflow-hidden">
+    <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 px-4">
+      <div className="ui-card ui-fade mx-auto w-full max-w-xl overflow-hidden border-gray-200">
         <div className="flex items-center justify-between border-b border-[var(--color-border)] p-3">
           <div className="flex items-center gap-2 text-sm font-bold text-[var(--color-text)]">
             <Download size={18} className="text-[var(--color-accent)]" />
@@ -76,8 +76,8 @@ export const InstallPwaPrompt: React.FC = React.memo(() => {
         </div>
 
         <div className="p-4">
-          <p className="mb-3 text-sm font-medium text-gray-600">
-            Instala EspaOil para acceder más rápido y usarla a pantalla completa.
+          <p className="mb-3 text-sm font-medium text-gray-700">
+            Instala EspaOil para abrirla mas rapido y usarla a pantalla completa.
           </p>
 
           {isIOS ? (
@@ -88,7 +88,7 @@ export const InstallPwaPrompt: React.FC = React.memo(() => {
               </div>
               <div className="flex items-center gap-2">
                 <span className="ui-radius-badge bg-gray-200 p-1 text-gray-700"><PlusSquare size={16} /></span>
-                <span>2. Selecciona <strong>Añadir a inicio</strong></span>
+                <span>2. Selecciona <strong>Anadir a inicio</strong></span>
               </div>
             </div>
           ) : (

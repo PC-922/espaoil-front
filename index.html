@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gasolineras baratas en Espana | Precio gasolina hoy | EspaOil</title>
     <meta
       name="description"
@@ -32,6 +32,12 @@
     />
     <meta name="twitter:image" content="https://espaoil.com/icons/app-icon.svg" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="/icons/app-icon.svg" />
     <link rel="apple-touch-icon" href="/icons/app-icon.svg" />
@@ -114,48 +120,56 @@
     </script>
     <style>
       :root {
-        --color-bg: #f8fafc;
+        --color-bg: #f5f7fa;
         --color-surface: #ffffff;
-        --color-border: #e5e7eb;
-        --color-text: #111827;
-        --color-muted: #6b7280;
-        --color-accent: #dc2626;
-        --color-accent-soft: #fef2f2;
+        --color-surface-muted: #f8fafc;
+        --color-border: #dde3ea;
+        --color-text: #0f172a;
+        --color-muted: #4b5563;
+        --color-accent: #d62828;
+        --color-accent-soft: #fff1f1;
         --space-1: 0.25rem;
         --space-2: 0.5rem;
         --space-3: 0.75rem;
         --space-4: 1rem;
         --space-5: 1.25rem;
-        --radius-card: 1.25rem;
-        --radius-field: 1rem;
+        --space-6: 1.5rem;
+        --space-7: 1.75rem;
+        --radius-field: 0.9rem;
         --radius-control: 0.75rem;
-        --radius-badge: 0.5rem;
+        --radius-badge: 0.55rem;
         --radius-pill: 9999px;
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+        --nav-height: 4.5rem;
+        --font-ui: 'Manrope', 'Segoe UI', sans-serif;
+        --font-brand: 'Space Grotesk', 'Manrope', sans-serif;
       }
 
       body {
         -webkit-tap-highlight-color: transparent;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-family: var(--font-ui);
         background: var(--color-bg);
         color: var(--color-text);
+        line-height: 1.35;
       }
 
       .ui-shell {
         background: var(--color-bg);
         color: var(--color-text);
+        min-height: 100dvh;
       }
 
       .ui-page {
         width: 100%;
         max-width: 36rem;
         margin-inline: auto;
-        padding: var(--space-3) var(--space-4) 7rem;
+        padding: var(--space-4) var(--space-4) calc(var(--nav-height) + var(--safe-bottom) + 1.5rem);
       }
 
       .ui-card {
         border: 1px solid var(--color-border);
         background: var(--color-surface);
-        border-radius: var(--radius-card);
+        border-radius: 1rem;
       }
 
       .ui-input,
@@ -165,6 +179,13 @@
         border-radius: var(--radius-field);
         background: var(--color-surface);
         color: var(--color-text);
+        min-height: 2.8rem;
+      }
+
+      .ui-input:focus,
+      .ui-select:focus {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px #fee2e2;
       }
 
       .ui-radius-control {
@@ -189,15 +210,80 @@
 
       .ui-bottom-nav {
         border-top: 1px solid var(--color-border);
-        background: var(--color-surface);
+        background: color-mix(in srgb, var(--color-surface) 86%, transparent);
+        backdrop-filter: blur(8px);
+        min-height: calc(var(--nav-height) + var(--safe-bottom));
       }
 
       .ui-nav-btn {
         color: var(--color-muted);
+        min-height: 3.5rem;
+        border-radius: 0.8rem;
       }
 
       .ui-nav-btn-active {
         color: var(--color-accent);
+        background: var(--color-accent-soft);
+      }
+
+      .ui-brand {
+        font-family: var(--font-brand);
+        letter-spacing: 0.01em;
+      }
+
+      .ui-divider {
+        border-top: 1px solid var(--color-border);
+      }
+
+      .ui-rise {
+        animation: rise-in 0.38s ease-out both;
+      }
+
+      .ui-fade {
+        animation: fade-in 0.26s ease-out both;
+      }
+
+      .ui-slide-down {
+        animation: slide-down 0.24s ease-out both;
+      }
+
+      @keyframes rise-in {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slide-down {
+        from {
+          opacity: 0;
+          transform: translateY(-6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .ui-rise,
+        .ui-fade,
+        .ui-slide-down {
+          animation: none;
+        }
       }
 
       /* Hide scrollbar for clean mobile look */
@@ -207,7 +293,7 @@
       }
     </style>
 </head>
-  <body class="bg-gray-50 text-slate-900 select-none">
+  <body class="bg-gray-50 text-slate-900">
     <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>

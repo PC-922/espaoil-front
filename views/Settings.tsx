@@ -21,28 +21,29 @@ export const Settings: React.FC = () => {
   };
 
   return (
-    <div className="ui-page">
-      <header className="mb-4">
-        <h1 className="text-2xl font-black text-gray-900">Configuracion</h1>
-        <p className="mt-1 text-sm text-gray-600">Personaliza como quieres abrir las rutas desde los resultados.</p>
+    <div className="ui-page space-y-4">
+      <header className="ui-rise">
+        <p className="ui-brand text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-accent)]">EspaOil</p>
+        <h1 className="mt-1 text-2xl font-black text-gray-900">Configuracion</h1>
+        <p className="mt-1 text-sm font-medium text-gray-600">Elige la app de mapas para abrir rutas desde resultados.</p>
       </header>
 
-      <div className="ui-card space-y-4 p-4 text-gray-700">
+      <section className="ui-card ui-fade space-y-4 p-4 text-gray-700">
         <div className="flex items-start gap-3">
           <div className="ui-radius-control bg-[var(--color-accent-soft)] p-2 text-[var(--color-accent)]">
             <MapPinned size={18} />
           </div>
           <div>
-            <h2 className="font-bold text-gray-900">App de mapas por defecto</h2>
-            <p className="text-sm text-gray-500">Elige dónde abrir la ruta al pulsar en una gasolinera.</p>
+            <h2 className="font-bold text-gray-900">Mapa por defecto</h2>
+            <p className="text-sm font-medium text-gray-600">Selecciona donde quieres abrir la navegacion.</p>
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 pt-1">
           {(Object.keys(MAP_PROVIDER_LABELS) as MapProvider[]).map((option) => (
             <label
               key={option}
-              className={`ui-radius-control flex min-h-12 items-center justify-between border p-3 transition-colors ${provider === option ? 'border-red-200 bg-[var(--color-accent-soft)]' : 'cursor-pointer border-[var(--color-border)] bg-white'}`}
+              className={`ui-radius-control flex min-h-12 items-center justify-between border p-3 transition-colors ${provider === option ? 'border-red-200 bg-[var(--color-accent-soft)]' : 'cursor-pointer border-[var(--color-border)] bg-white hover:bg-gray-50'}`}
             >
               <span className="font-semibold text-gray-800">{MAP_PROVIDER_LABELS[option]}</span>
               <input
@@ -56,11 +57,11 @@ export const Settings: React.FC = () => {
           ))}
         </div>
 
-        <div className="border-t border-gray-100 pt-4">
+        <div className="ui-divider pt-4">
           <p className="text-sm font-semibold text-gray-900">Version {__APP_VERSION__}</p>
-          <p className="mt-1 text-xs text-gray-500">Build {FORMATTED_BUILD_DATE}</p>
+          <p className="mt-1 text-xs font-medium text-gray-500">Build {FORMATTED_BUILD_DATE}</p>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

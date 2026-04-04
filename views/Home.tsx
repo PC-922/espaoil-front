@@ -92,51 +92,51 @@ export const Home: React.FC = () => {
   const showSuggestionsDropdown =
     addressQuery.trim().length >= 3 && (suggestionsLoading || addressSuggestions.length > 0);
 
+  const hasResults = searched && !loading && stations.length > 0;
+
   return (
-    <div className="ui-page">
-      <header className="mb-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-accent)]">EspaOil</p>
-        <h1 className="mt-1 text-[1.35rem] font-black leading-tight text-[var(--color-text)]">Gasolineras baratas cerca de ti</h1>
-        <p className="mt-1.5 text-sm text-gray-600">Compara por precio o distancia y abre ruta al instante.</p>
+    <div className="ui-page space-y-5">
+      <header className="ui-rise space-y-2">
+        <p className="ui-brand text-xs font-bold uppercase tracking-[0.18em] text-[var(--color-accent)]">EspaOil</p>
+        <h1 className="text-[1.75rem] font-black leading-[1.05] text-[var(--color-text)]">Gasolineras baratas cerca de ti</h1>
+        <p className="max-w-[34ch] text-sm font-medium text-[var(--color-muted)]">Busca por ubicacion o direccion, compara en segundos y abre ruta al momento.</p>
       </header>
 
-      <section className="ui-card mb-4 space-y-3 p-3.5">
+      <section className="ui-card ui-rise space-y-4 p-4">
         <div>
-          <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-gray-500">Modo de busqueda</label>
-          <div className="ui-radius-control grid grid-cols-2 gap-1.5 bg-gray-100 p-1">
+          <label className="mb-2 block text-[11px] font-bold uppercase tracking-wide text-gray-600">Modo de busqueda</label>
+          <div className="ui-radius-control grid grid-cols-2 gap-1.5 bg-[var(--color-surface-muted)] p-1">
             <button
               type="button"
               onClick={handleSetLocationMode}
-              className={`ui-radius-control border px-3 py-2 text-sm font-bold transition-colors ${searchMode === 'location' ? 'border-red-200 bg-[var(--color-accent-soft)] text-[var(--color-accent)]' : 'border-transparent text-gray-600'}`}
+              className={`ui-radius-control border px-3 py-2.5 text-sm font-bold transition-colors ${searchMode === 'location' ? 'border-red-200 bg-[var(--color-accent-soft)] text-[var(--color-accent)]' : 'border-transparent text-gray-600'}`}
             >
-              Mi ubicación
+              Mi ubicacion
             </button>
             <button
               type="button"
               onClick={handleSetAddressMode}
-              className={`ui-radius-control border px-3 py-2 text-sm font-bold transition-colors ${searchMode === 'address' ? 'border-red-200 bg-[var(--color-accent-soft)] text-[var(--color-accent)]' : 'border-transparent text-gray-600'}`}
+              className={`ui-radius-control border px-3 py-2.5 text-sm font-bold transition-colors ${searchMode === 'address' ? 'border-red-200 bg-[var(--color-accent-soft)] text-[var(--color-accent)]' : 'border-transparent text-gray-600'}`}
             >
-              Dirección
+              Direccion
             </button>
           </div>
         </div>
 
         {searchMode === 'address' && (
-          <div className="relative">
-            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-gray-500">Direccion</label>
+          <div className="ui-slide-down relative">
+            <label className="mb-2 block text-[11px] font-bold uppercase tracking-wide text-gray-600">Direccion</label>
             <input
               type="text"
               value={addressQuery}
               onChange={handleAddressInputChange}
-              placeholder="Ej: Gran Vía 1, Madrid"
-              className="ui-input px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="Ej: Gran Via 1, Madrid"
+              className="ui-input px-3 py-2.5 text-sm font-semibold focus:outline-none"
             />
 
             {showSuggestionsDropdown && (
               <div className="ui-radius-control absolute left-0 right-0 z-20 mt-1.5 max-h-56 overflow-auto border border-[var(--color-border)] bg-white">
-                {suggestionsLoading && (
-                  <div className="px-3 py-2.5 text-sm text-gray-400">Buscando sugerencias...</div>
-                )}
+                {suggestionsLoading && <div className="px-3 py-2.5 text-sm text-gray-500">Buscando sugerencias...</div>}
 
                 {!suggestionsLoading &&
                   addressSuggestions.map((suggestion, index) => (
@@ -144,7 +144,7 @@ export const Home: React.FC = () => {
                       key={`${suggestion.lat}-${suggestion.lon}-${index}`}
                       type="button"
                       onClick={() => handleSelectAddressSuggestion(suggestion)}
-                      className="w-full border-b border-gray-100 px-3 py-2.5 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50 last:border-b-0"
+                      className="w-full border-b border-gray-100 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 last:border-b-0"
                     >
                       {suggestion.label}
                     </button>
@@ -154,53 +154,56 @@ export const Home: React.FC = () => {
           </div>
         )}
 
-        <div>
-          <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-gray-500">Tipo de combustible</label>
-          <div className="relative">
-            <select
-              value={fuelType}
-              onChange={handleFuelTypeChange}
-              className="ui-select appearance-none px-3 py-2.5 pr-9 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              {Object.entries(FUEL_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label className="mb-2 block text-[11px] font-bold uppercase tracking-wide text-gray-600">Combustible</label>
+            <div className="relative">
+              <select
+                value={fuelType}
+                onChange={handleFuelTypeChange}
+                className="ui-select appearance-none px-3 py-2.5 pr-9 text-sm font-semibold focus:outline-none"
+              >
+                {Object.entries(FUEL_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div>
-          <div className="mb-1.5 flex items-center justify-between">
-            <label className="block text-[11px] font-bold uppercase tracking-wide text-gray-500">Radio de busqueda (km)</label>
-            <span className="ui-radius-badge bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-900">{radius} km</span>
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <label className="block text-[11px] font-bold uppercase tracking-wide text-gray-600">Radio (km)</label>
+              <span className="ui-radius-badge bg-[var(--color-surface-muted)] px-2 py-0.5 text-[11px] font-bold text-gray-900">{radius} km</span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="100"
+              value={radius}
+              onChange={handleRadiusChange}
+              className="h-2.5 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-red-600"
+            />
           </div>
-          <input
-            type="range"
-            min="1"
-            max="100"
-            value={radius}
-            onChange={handleRadiusChange}
-            className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-red-600"
-          />
         </div>
 
         <Button
           onClick={handleSearch}
           fullWidth
           disabled={loading}
+          className="mt-1"
         >
           {loading ? (
-             <span className="flex items-center gap-2">
-               <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-               Buscando...
-             </span>
+            <span className="flex items-center gap-2">
+              <span className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></span>
+              Buscando...
+            </span>
           ) : (
             <>
               {searchMode === 'location' ? <LocateFixed size={18} /> : <Search size={18} />}
-              Buscar Gasolineras
+              Buscar gasolineras
             </>
           )}
         </Button>
@@ -209,15 +212,15 @@ export const Home: React.FC = () => {
       {renderStatusBanner()}
 
       {searched && !loading && (
-        <div className="space-y-4">
-          <div className="mb-1 flex items-center justify-between">
-             <h2 className="text-sm font-bold text-gray-900">Resultados ({stations.length})</h2>
-              <span className="text-xs text-gray-500">
-               {sortBy === 'price' ? 'más baratas primero' : 'más cercanas primero'}
-              </span>
-            </div>
+        <section className="ui-fade space-y-3">
+          <div className="flex items-end justify-between">
+            <h2 className="text-sm font-black tracking-wide text-gray-900">Resultados ({stations.length})</h2>
+            <span className="text-xs font-medium text-gray-600">
+              {sortBy === 'price' ? 'mas baratas primero' : 'mas cercanas primero'}
+            </span>
+          </div>
 
-          <div className="ui-radius-control mb-3 grid grid-cols-2 gap-1.5 bg-gray-100 p-1">
+          <div className={`ui-radius-control z-20 grid grid-cols-2 gap-1.5 border border-[var(--color-border)] bg-white p-1 ${hasResults ? 'sticky top-2' : ''}`}>
             <button
               type="button"
               onClick={handleSortByPrice}
@@ -235,10 +238,10 @@ export const Home: React.FC = () => {
           </div>
 
           {stations.length === 0 ? (
-             <div className="ui-card py-8 text-center border-dashed border-gray-300">
-               <Search size={48} className="mx-auto text-gray-300 mb-2" />
-               <p className="text-gray-500 font-medium">No se encontraron gasolineras</p>
-               <p className="text-sm text-gray-400">Intenta aumentar el radio de búsqueda</p>
+            <div className="ui-card py-8 text-center">
+              <Search size={42} className="mx-auto mb-2 text-gray-300" />
+              <p className="font-semibold text-gray-700">No se encontraron gasolineras</p>
+              <p className="text-sm text-gray-500">Prueba con un radio de busqueda mayor.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -250,27 +253,16 @@ export const Home: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
+        </section>
       )}
 
-      <section className="ui-card mt-6 space-y-3 p-4">
-        <h2 className="text-lg font-black text-gray-900">Guia rapida</h2>
-        <p className="text-sm leading-relaxed text-gray-600">
-          EspaOil te permite encontrar gasolineras cercanas por ubicacion o direccion, filtrar por combustible y ordenar por precio o distancia para decidir mas rapido.
-        </p>
-        <div className="space-y-3 border-t border-gray-100 pt-3 text-sm text-gray-600">
-          <div>
-            <h3 className="font-bold text-gray-800">Como ahorrar mas al repostar?</h3>
-            <p>Ordena por precio, ajusta el radio de busqueda y compara opciones cercanas antes de iniciar la ruta.</p>
-          </div>
-          <div>
-            <h3 className="font-bold text-gray-800">De donde salen los precios?</h3>
-            <p>De fuentes oficiales publicadas por el Ministerio para la Transicion Ecologica y el Reto Demografico.</p>
-          </div>
-          <div>
-            <h3 className="font-bold text-gray-800">Cada cuanto se actualiza la informacion?</h3>
-            <p>Mostramos la informacion mas reciente disponible para cada estacion para facilitar una comparacion fiable.</p>
-          </div>
+      <section className="space-y-3 pt-2">
+        <div className="ui-divider"></div>
+        <h2 className="text-sm font-black uppercase tracking-wide text-gray-900">Guia rapida</h2>
+        <div className="space-y-2 text-sm text-gray-700">
+          <p>1. Busca con tu ubicacion o escribe una direccion.</p>
+          <p>2. Ordena por precio para ahorrar o por distancia para llegar antes.</p>
+          <p>3. Abre ruta en tu app de mapas favorita.</p>
         </div>
       </section>
     </div>
