@@ -4,6 +4,7 @@ import { FuelType, FUEL_LABELS } from '../types';
 import { Button } from '../components/Button';
 import { GasStationCard } from '../components/GasStationCard';
 import { useHomeSearch } from '../hooks/useHomeSearch';
+import { useFavorites } from '../hooks/useFavorites';
 import { AddressSuggestion } from '../utils/geocoding';
 
 // Siguiendo Vercel best practice: rerender-no-inline-components
@@ -53,6 +54,7 @@ export const Home: React.FC = () => {
     sortedStations,
     handleSearch,
   } = useHomeSearch();
+  const { favorites, isFavorite, toggleFavorite } = useFavorites();
   const addressFieldRef = useRef<HTMLDivElement | null>(null);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
 
@@ -326,6 +328,8 @@ export const Home: React.FC = () => {
                 <GasStationCard
                   key={`${station.numericLat}-${station.numericLon}-${index}`}
                   station={station}
+                  isFavorite={isFavorite(station)}
+                  onToggleFavorite={() => toggleFavorite(station)}
                 />
               ))}
             </div>

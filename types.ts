@@ -66,3 +66,16 @@ export const MAP_PROVIDER_LABELS: Record<MapProvider, string> = {
   apple: 'Apple Maps',
   waze: 'Waze',
 };
+
+export interface FavoriteStation {
+  id: string; // `${lat}-${lon}`
+  trader: string;
+  name: string;
+  municipality: string;
+  latitude: number;
+  longitude: number;
+  distance?: number;
+  lastKnownPrice?: number;
+  lastKnownSchedule?: string;
+  addedAt: number; // timestamp
+}

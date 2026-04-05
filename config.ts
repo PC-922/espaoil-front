@@ -5,4 +5,5 @@ export const CONFIG = {
   API_PROXY_TARGET: 'https://espaoilserver.padyserveroracle.duckdns.org',
   DEFAULT_SEARCH_RADIUS_KM: 20,
   DEFAULT_FUEL_TYPE: 'GASOLINA_95_E5',
+  FAVORITES_PRICE_REFRESH_INTERVAL_MS: 5 * 60 * 1000,
 };

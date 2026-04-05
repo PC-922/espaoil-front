@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Home } from './views/Home';
+import { Favorites } from './views/Favorites';
 import { Settings } from './views/Settings';
 import { BottomNav } from './components/BottomNav';
 import { InstallPwaPrompt } from './components/InstallPwaPrompt';
@@ -7,11 +8,11 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'home' | 'settings'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'favorites' | 'settings'>('home');
 
   // Siguiendo Vercel best practice: rerender-memo
   // Memoizamos el handler para que BottomNav no reciba nueva función en cada render
-  const handleViewChange = useCallback((view: 'home' | 'settings') => {
+  const handleViewChange = useCallback((view: 'home' | 'favorites' | 'settings') => {
     setCurrentView(view);
   }, []);
 
@@ -46,6 +47,11 @@ const App: React.FC = () => {
           description:
             'Encuentra gasolineras baratas cerca de ti en Espana, compara precio gasolina hoy por distancia o coste y llega rapido con Google Maps, Apple Maps o Waze.',
         },
+        favorites: {
+          title: 'Mis gasolineras favoritas | EspaOil',
+          description:
+            'Consulta los precios actuales de tus gasolineras favoritas en Espana y compara para ahorrar en combustible.',
+        },
         settings: {
           title: 'Ajustes de busqueda | EspaOil',
           description:
@@ -75,6 +81,7 @@ const App: React.FC = () => {
     <div className="ui-shell min-h-[100dvh]">
       <main className="w-full">
         {currentView === 'home' && <Home />}
+        {currentView === 'favorites' && <Favorites />}
         {currentView === 'settings' && <Settings />}
       </main>
 
