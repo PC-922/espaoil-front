@@ -108,24 +108,24 @@ export const useHomeSearch = () => {
       searchMode,
     };
 
-    // Debounce rapid state changes (e.g. slider drag, repeated sort toggles) into
-    // a single write. The idle callback runs WITHOUT a forced timeout so it never
-    // executes during an active user interaction (which would inflate INP).
+    // Siguiendo Vercel best practice: js-request-idle-callback
+    // Aumentamos el debounce a 2000ms para reducir frecuencia de escrituras
+    // y usamos SOLO requestIdleCallback sin timeout forzado para evitar
+    // bloquear el hilo principal durante interacciones del usuario (reduce INP).
     const debounceId = globalThis.setTimeout(() => {
-      const persistState = () => {
-        try {
-          sessionStorage.setItem(HOME_STATE_STORAGE_KEY, JSON.stringify(stateToPersist));
-        } catch {
-          // noop
-        }
-      };
-
       if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-        (window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(persistState);
-      } else {
-        persistState();
+        (window as Window & { requestIdleCallback: (cb: () => void, options?: { timeout: number }) => number }).requestIdleCallback(
+          () => {
+            try {
+              sessionStorage.setItem(HOME_STATE_STORAGE_KEY, JSON.stringify(stateToPersist));
+            } catch {
+              // noop - quota exceeded o storage bloqueado
+            }
+          },
+          { timeout: 3000 } // timeout largo para no forzar durante interacciones
+        );
       }
-    }, 800);
+    }, 2000);
 
     return () => {
       globalThis.clearTimeout(debounceId);

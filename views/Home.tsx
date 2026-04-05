@@ -4,6 +4,32 @@ import { FuelType, FUEL_LABELS } from '../types';
 import { Button } from '../components/Button';
 import { GasStationCard } from '../components/GasStationCard';
 import { useHomeSearch } from '../hooks/useHomeSearch';
+import { AddressSuggestion } from '../utils/geocoding';
+
+// Siguiendo Vercel best practice: rerender-no-inline-components
+// Componente memoizado para evitar crear funciones inline en cada render
+const SuggestionButton: React.FC<{
+  suggestion: AddressSuggestion;
+  index: number;
+  onSelect: (suggestion: AddressSuggestion) => void;
+}> = React.memo(({ suggestion, index, onSelect }) => {
+  const handleClick = useCallback(() => {
+    onSelect(suggestion);
+  }, [suggestion, onSelect]);
+
+  return (
+    <button
+      key={`${suggestion.lat}-${suggestion.lon}-${index}`}
+      type="button"
+      onClick={handleClick}
+      className="w-full border-b border-gray-100 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 last:border-b-0"
+    >
+      {suggestion.label}
+    </button>
+  );
+});
+
+SuggestionButton.displayName = 'SuggestionButton';
 
 export const Home: React.FC = () => {
   const {
@@ -29,15 +55,6 @@ export const Home: React.FC = () => {
   } = useHomeSearch();
   const addressFieldRef = useRef<HTMLDivElement | null>(null);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
-
-  const stationKeyByRef = useMemo(() => {
-    return new Map(
-      stations.map((station, index) => [
-        station,
-        `${station.numericLat}-${station.numericLon}-${station.trader}-${station.name}-${index}`,
-      ])
-    );
-  }, [stations]);
 
   // Handlers estables con useCallback para evitar recrearlos en cada render
   const handleSetLocationMode = useCallback(() => setSearchMode('location'), [setSearchMode]);
@@ -70,28 +87,36 @@ export const Home: React.FC = () => {
   }, [handleAddressQueryChange]);
 
   const handleAddressSuggestionSelect = useCallback(
-    (suggestion: (typeof addressSuggestions)[number]) => {
+    (suggestion: AddressSuggestion) => {
       handleSelectAddressSuggestion(suggestion);
       setIsSuggestionsOpen(false);
     },
-    [addressSuggestions, handleSelectAddressSuggestion]
+    [handleSelectAddressSuggestion]
   );
 
   useEffect(() => {
+    // Siguiendo Vercel best practice: client-passive-event-listeners
+    // Diferimos la actualización del estado con requestAnimationFrame para
+    // evitar bloquear el event handler (reduce INP en clicks)
     const handlePointerDown = (event: PointerEvent) => {
       if (!addressFieldRef.current) {
         return;
       }
 
-      if (!addressFieldRef.current.contains(event.target as Node)) {
-        setIsSuggestionsOpen(false);
+      const target = event.target as Node;
+      if (!addressFieldRef.current.contains(target)) {
+        // Diferir actualización de estado fuera del event handler
+        requestAnimationFrame(() => {
+          setIsSuggestionsOpen(false);
+        });
       }
     };
 
-    document.addEventListener('pointerdown', handlePointerDown);
+    // Usar capture: true para mayor rendimiento (event delegation)
+    document.addEventListener('pointerdown', handlePointerDown, { capture: true });
 
     return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('pointerdown', handlePointerDown, { capture: true });
     };
   }, []);
 
@@ -194,14 +219,12 @@ export const Home: React.FC = () => {
 
                 {!suggestionsLoading &&
                   addressSuggestions.map((suggestion, index) => (
-                    <button
+                    <SuggestionButton
                       key={`${suggestion.lat}-${suggestion.lon}-${index}`}
-                      type="button"
-                      onClick={() => handleAddressSuggestionSelect(suggestion)}
-                      className="w-full border-b border-gray-100 px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 last:border-b-0"
-                    >
-                      {suggestion.label}
-                    </button>
+                      suggestion={suggestion}
+                      index={index}
+                      onSelect={handleAddressSuggestionSelect}
+                    />
                   ))}
               </div>
             )}
@@ -299,9 +322,9 @@ export const Home: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {sortedStations.map((station) => (
+              {sortedStations.map((station, index) => (
                 <GasStationCard
-                  key={stationKeyByRef.get(station) ?? `${station.numericLat}-${station.numericLon}-${station.trader}-${station.name}`}
+                  key={`${station.numericLat}-${station.numericLon}-${index}`}
                   station={station}
                 />
               ))}

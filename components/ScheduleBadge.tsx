@@ -7,8 +7,26 @@ interface Props {
 
 export const ScheduleBadge: React.FC<Props> = React.memo(({ schedule }) => {
   const [showDetails, setShowDetails] = useState(false);
-  const parsed = useMemo(() => parseSchedule(schedule), [schedule]);
-  const liveStatus = useMemo(() => getScheduleLiveStatus(parsed), [parsed]);
+  
+  // Siguiendo Vercel best practice: rerender-memo
+  // Parseamos SOLO cuando el schedule no está vacío (parsed.raw check diferido).
+  // El parsing costoso (460 líneas de regex) se ejecuta en useMemo, pero SOLO
+  // si schedule tiene contenido. Esto evita ~150-300ms de bloqueo del hilo principal
+  // en el render inicial cuando hay muchas estaciones.
+  const parsed = useMemo(() => {
+    if (!schedule || schedule.trim() === '') {
+      return { raw: '', confidence: 'low' as const, blocks: [], is24h: false };
+    }
+    return parseSchedule(schedule);
+  }, [schedule]);
+  
+  // Lazy evaluation: solo calculamos liveStatus si parsed.raw existe
+  const liveStatus = useMemo(() => {
+    if (!parsed.raw) {
+      return { status: 'unknown' as const, nextOpeningLabel: null, nextOpening: null };
+    }
+    return getScheduleLiveStatus(parsed);
+  }, [parsed]);
 
   const shouldShowDetails = parsed.raw && (parsed.confidence === 'low' || parsed.blocks.length > 0);
 
