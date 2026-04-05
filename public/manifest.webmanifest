@@ -21,6 +21,12 @@
       "purpose": "maskable"
     },
     {
+      "src": "/icons/apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
       "src": "/icons/app-icon.svg",
       "type": "image/svg+xml",
       "sizes": "any",
@@ -30,6 +36,21 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "screenshots": [
+    {
+      "src": "/screenshots/install-mobile.png",
+      "type": "image/png",
+      "sizes": "862x1864",
+      "label": "Busqueda y favoritos en vista movil"
+    },
+    {
+      "src": "/screenshots/install-wide.png",
+      "type": "image/png",
+      "sizes": "3536x2066",
+      "form_factor": "wide",
+      "label": "Comparativa de gasolineras en vista amplia"
+    }
+  ],
   "theme_color": "#dc2626",
   "background_color": "#f9fafb"
 }
