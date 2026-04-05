@@ -1,26 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="EspaOil app icon">
-  <!-- Background square - full bleed, system will apply corner radius -->
-  <rect width="512" height="512" fill="#fee2e2"/>
-  
-  <!-- Fuel pump icon (similar to lucide-react Fuel icon) -->
-  <g transform="translate(256 256)" fill="#dc2626">
-    <!-- Main pump body -->
-    <rect x="-50" y="-60" width="70" height="100" rx="8" stroke="#dc2626" stroke-width="3" fill="none"/>
-    
-    <!-- Display/screen area -->
-    <rect x="-42" y="-48" width="54" height="32" rx="4" fill="#dc2626"/>
-    
-    <!-- Base -->
-    <rect x="-56" y="38" width="82" height="8" rx="4" fill="#dc2626"/>
-    
-    <!-- Nozzle hose -->
-    <path d="M 20 -10 L 38 -10 C 46 -10 52 -4 52 4 L 52 24 C 52 30 48 35 42 37 C 36 39 30 36 28 30 L 28 16 L 38 16 L 38 24 C 38 26 40 28 42 28 C 44 28 46 26 46 24 L 46 4 C 46 2 44 0 42 0 L 20 0 Z" fill="#dc2626"/>
-    
-    <!-- Nozzle drops -->
-    <g transform="translate(50 -20)">
-      <circle cx="0" cy="0" r="3" fill="#dc2626"/>
-      <circle cx="8" cy="-6" r="2.5" fill="#dc2626"/>
-      <circle cx="14" cy="2" r="2" fill="#dc2626"/>
-    </g>
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg" aria-label="EspaOil app icon" role="img">
+ <!-- Background square - full bleed, system will apply corner radius -->
+
+ <!-- Fuel pump icon (similar to lucide-react Fuel icon) -->
+ <g>
+  <title>Layer 1</title>
+  <rect id="svg_1" fill="#fee2e2" height="512" width="512"/>
+  <g stroke="null" id="svg_2" fill="#dc2626">
+   <!-- Main pump body -->
+   <rect stroke="#dc2626" id="svg_3" fill="none" stroke-width="3" rx="8" height="290.56605" width="189.91804" y="102" x="106.77869"/>
+   <!-- Display/screen area -->
+   <rect stroke="null" id="svg_4" fill="#dc2626" rx="4" height="92.98114" width="146.5082" y="136.86792" x="128.48361"/>
+   <!-- Base -->
+   <rect stroke="null" id="svg_5" fill="#dc2626" rx="4" height="23.24528" width="222.47541" y="386.75472" x="90.5"/>
+   <!-- Nozzle hose -->
+   <path stroke="null" id="svg_6" fill="#dc2626" d="m296.69673,247.28302l48.83607,0c21.70492,0 37.98361,17.43396 37.98361,40.67925l0,58.11321c0,17.43396 -10.85246,31.96227 -27.13115,37.77359c-16.27869,5.81132 -32.55738,-2.90566 -37.98361,-20.33962l0,-40.67925l27.13115,0l0,23.24528c0,5.81132 5.42623,11.62264 10.85246,11.62264c5.42623,0 10.85246,-5.81132 10.85246,-11.62264l0,-58.11321c0,-5.81132 -5.42623,-11.62264 -10.85246,-11.62264l-59.68853,0l0,-29.0566z"/>
+   <!-- Nozzle drops -->
+   <g stroke="null" id="svg_7">
+    <circle stroke="null" id="svg_8" fill="#dc2626" r="8.13934" cy="218.22642" cx="378.09017"/>
+    <circle stroke="null" id="svg_9" fill="#dc2626" r="6.78279" cy="200.79245" cx="399.79509"/>
+    <circle stroke="null" id="svg_10" fill="#dc2626" r="5.42623" cy="224.03774" cx="416.07378"/>
+   </g>
   </g>
+ </g>
 </svg>
