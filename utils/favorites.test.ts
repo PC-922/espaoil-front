@@ -133,7 +133,7 @@ describe('favorites utilities', () => {
       // Mock localStorage.setItem para simular QuotaExceededError
       const quotaError = new Error('QuotaExceededError');
       quotaError.name = 'QuotaExceededError';
-      vi.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => {
+      vi.spyOn(localStorage, 'setItem').mockImplementationOnce(() => {
         throw quotaError;
       });
 
