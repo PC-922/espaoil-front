@@ -44,7 +44,7 @@ const getIdentityValues = (input: {
 
 export const generateStationIdFromModel = (station: GasStationModel): string => {
   const { identityTrader, identityName, municipality } = getIdentityValues(station);
-  return generateStationId(station.numericLat, station.numericLon, identityTrader, identityName, municipality);
+  return generateStationId(station.latitude, station.longitude, identityTrader, identityName, municipality);
 };
 
 const normalizeStationText = (value: string): string => {
@@ -194,10 +194,10 @@ export const addFavorite = (station: GasStationModel): void => {
     trader: displayTrader,
     name: displayName,
     municipality,
-    latitude: station.numericLat,
-    longitude: station.numericLon,
+    latitude: station.latitude,
+    longitude: station.longitude,
     distance: station.distance,
-    lastKnownPrice: station.numericPrice > 0 ? station.numericPrice : undefined,
+    lastKnownPrice: station.price > 0 ? station.price : undefined,
     lastKnownSchedule: station.schedule,
     addedAt: Date.now(),
   };
@@ -263,10 +263,10 @@ export const toggleFavorite = (station: GasStationModel): boolean => {
     trader: displayTrader,
     name: displayName,
     municipality,
-    latitude: station.numericLat,
-    longitude: station.numericLon,
+    latitude: station.latitude,
+    longitude: station.longitude,
     distance: station.distance,
-    lastKnownPrice: station.numericPrice > 0 ? station.numericPrice : undefined,
+    lastKnownPrice: station.price > 0 ? station.price : undefined,
     lastKnownSchedule: station.schedule,
     addedAt: Date.now(),
   };

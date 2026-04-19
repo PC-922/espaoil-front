@@ -13,7 +13,7 @@ interface Props {
 
 export const GasStationCard: React.FC<Props> = React.memo(
   ({ station, isFavorite = false, onToggleFavorite }) => {
-    const hasValidPrice = station.numericPrice > 0;
+    const hasValidPrice = station.price > 0;
     const stationLabel =
       typeof station.name === 'string' && station.name.trim().length > 0
         ? station.name
@@ -22,8 +22,8 @@ export const GasStationCard: React.FC<Props> = React.memo(
           : 'Gasolinera';
     const mapProvider = getMapProvider();
     const mapsUrl = useMemo(
-      () => buildMapUrl(mapProvider, station.numericLat, station.numericLon),
-      [mapProvider, station.numericLat, station.numericLon]
+      () => buildMapUrl(mapProvider, station.latitude, station.longitude),
+      [mapProvider, station.latitude, station.longitude]
     );
 
     const handleFavoriteClick = (e: React.MouseEvent) => {
@@ -63,7 +63,7 @@ export const GasStationCard: React.FC<Props> = React.memo(
             {hasValidPrice ? (
               <div className="flex items-end justify-end gap-1">
                 <div className="text-[1.65rem] font-black leading-none text-gray-900">
-                  {formatPrice(station.numericPrice)}
+                  {formatPrice(station.price)}
                 </div>
                 <div className="pb-0.5 text-[10px] font-semibold leading-none text-gray-500">€/l</div>
               </div>
@@ -106,9 +106,9 @@ export const GasStationCard: React.FC<Props> = React.memo(
     // Comparación personalizada: re-renderizar si cambia isFavorite o la estación
     return (
       prevProps.isFavorite === nextProps.isFavorite &&
-      prevProps.station.numericLat === nextProps.station.numericLat &&
-      prevProps.station.numericLon === nextProps.station.numericLon &&
-      prevProps.station.numericPrice === nextProps.station.numericPrice
+      prevProps.station.latitude === nextProps.station.latitude &&
+      prevProps.station.longitude === nextProps.station.longitude &&
+      prevProps.station.price === nextProps.station.price
     );
   }
 );

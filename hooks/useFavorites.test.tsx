@@ -12,21 +12,18 @@ describe('useFavorites', () => {
     town: 'MADRID',
     municipality: 'MADRID',
     schedule: 'L-D: 24H',
-    price: '1.279',
-    latitude: '40.416729',
-    longitude: '-3.703339',
+    price: 1.279,
+    latitude: 40.416729,
+    longitude: -3.703339,
     distance: 2.5,
-    numericPrice: 1.279,
-    numericLat: 40.416729,
-    numericLon: -3.703339,
   };
 
   const mockStation2: GasStationModel = {
     ...mockStation,
     trader: 'CEPSA',
     name: 'E.S. ALCALA',
-    numericLat: 41.5,
-    numericLon: -2.8,
+    latitude: 41.5,
+    longitude: -2.8,
   };
 
   beforeEach(() => {

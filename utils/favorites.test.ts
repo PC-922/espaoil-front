@@ -19,13 +19,10 @@ describe('favorites utilities', () => {
     town: 'MADRID',
     municipality: 'MADRID',
     schedule: 'L-D: 24H',
-    price: '1.279',
-    latitude: '40.416729',
-    longitude: '-3.703339',
+    price: 1.279,
+    latitude: 40.416729,
+    longitude: -3.703339,
     distance: 2.5,
-    numericPrice: 1.279,
-    numericLat: 40.416729,
-    numericLon: -3.703339,
   };
 
   beforeEach(() => {
@@ -177,8 +174,8 @@ describe('favorites utilities', () => {
     it('puede añadir múltiples favoritos diferentes', () => {
       const station2: GasStationModel = {
         ...mockStation,
-        numericLat: 41.5,
-        numericLon: -2.8,
+        latitude: 41.5,
+        longitude: -2.8,
       };
 
       addFavorite(mockStation);
@@ -203,8 +200,8 @@ describe('favorites utilities', () => {
     it('no afecta otros favoritos al eliminar uno', () => {
       const station2: GasStationModel = {
         ...mockStation,
-        numericLat: 41.5,
-        numericLon: -2.8,
+        latitude: 41.5,
+        longitude: -2.8,
         trader: 'CEPSA',
       };
 
@@ -231,12 +228,12 @@ describe('favorites utilities', () => {
   describe('isFavorite', () => {
     it('devuelve true si la gasolinera es favorita', () => {
       addFavorite(mockStation);
-      const result = isFavorite(mockStation.numericLat, mockStation.numericLon);
+      const result = isFavorite(mockStation.latitude, mockStation.longitude);
       expect(result).toBe(true);
     });
 
     it('devuelve false si la gasolinera no es favorita', () => {
-      const result = isFavorite(mockStation.numericLat, mockStation.numericLon);
+      const result = isFavorite(mockStation.latitude, mockStation.longitude);
       expect(result).toBe(false);
     });
   });

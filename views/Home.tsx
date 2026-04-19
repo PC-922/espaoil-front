@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LocateFixed, MapPin, Search, X } from 'lucide-react';
-import { FuelType, FUEL_LABELS } from '../types';
+import { FuelType, FUEL_LABELS, GasStationModel } from '../types';
 import { Button } from '../components/Button';
 import { GasStationCard } from '../components/GasStationCard';
 import { useHomeSearch } from '../hooks/useHomeSearch';
@@ -51,7 +51,6 @@ export const Home: React.FC = () => {
     setSortBy,
     searched,
     stations,
-    sortedStations,
     handleSearch,
   } = useHomeSearch();
   const { favorites, isFavorite, toggleFavorite } = useFavorites();
@@ -324,9 +323,9 @@ export const Home: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {sortedStations.map((station, index) => (
+              {stations.map((station: GasStationModel, index: number) => (
                 <GasStationCard
-                  key={`${station.numericLat}-${station.numericLon}-${index}`}
+                  key={`${station.latitude}-${station.longitude}-${index}`}
                   station={station}
                   isFavorite={isFavorite(station)}
                   onToggleFavorite={() => toggleFavorite(station)}

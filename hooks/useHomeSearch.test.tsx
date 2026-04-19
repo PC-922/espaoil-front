@@ -39,12 +39,9 @@ const sampleStation = (overrides?: Partial<GasStationModel>): GasStationModel =>
   town: 'MADRID',
   municipality: 'MADRID',
   schedule: '24H',
-  price: '1.499',
-  latitude: '40.4200',
-  longitude: '-3.7000',
-  numericPrice: 1.499,
-  numericLat: 40.42,
-  numericLon: -3.7,
+  price: 1.499,
+  latitude: 40.42,
+  longitude: -3.7,
   distance: 3.1,
   ...overrides,
 });
@@ -84,12 +81,12 @@ describe('useHomeSearch', () => {
     expect(result.current.searched).toBe(true);
     expect(result.current.searchMode).toBe('address');
     expect(result.current.addressQuery).toBe('');
-    expect(result.current.sortedStations).toHaveLength(1);
-    expect(result.current.sortedStations[0].distance).toBe(2.2);
+    expect(result.current.stations).toHaveLength(1);
+    expect(result.current.stations[0].distance).toBe(2.2);
   });
 
   it('realiza búsqueda y actualiza estado en flujo exitoso', async () => {
-    const repositoryData = [sampleStation({ distance: 1.2 }), sampleStation({ distance: 0.7, numericPrice: 1.45 })];
+    const repositoryData = [sampleStation({ distance: 1.2 }), sampleStation({ distance: 0.7, price: 1.45 })];
     mockGetNearbyStations.mockResolvedValue(repositoryData);
 
     setMockGeolocation((success) => {
@@ -139,7 +136,7 @@ describe('useHomeSearch', () => {
     expect(result.current.radius).toBe(CONFIG.DEFAULT_SEARCH_RADIUS_KM);
     expect(result.current.sortBy).toBe('price');
     expect(result.current.searched).toBe(false);
-    expect(result.current.sortedStations).toEqual([]);
+    expect(result.current.stations).toEqual([]);
   });
 
   it('realiza búsqueda por dirección cuando el modo es address', async () => {
