@@ -1,21 +1,14 @@
-// API Response Shape
-export interface GasStation {
+// API Response Shape — server returns all numeric fields and pre-calculated distance
+export interface GasStationModel {
   trader: string;
   name: string;
   town: string;
   municipality: string;
   schedule: string;
-  price: number | string; // API output example shows "1.279" as string or number
-  latitude: number | string;
-  longitude: number | string;
-}
-
-// Internal model with calculated fields
-export interface GasStationModel extends GasStation {
-  distance: number; // calculated distance in km
-  numericPrice: number;
-  numericLat: number;
-  numericLon: number;
+  price: number;
+  latitude: number;
+  longitude: number;
+  distance: number; // pre-calculated by server (km)
 }
 
 export enum FuelType {
@@ -51,11 +44,6 @@ export const FUEL_LABELS: Record<FuelType, string> = {
   [FuelType.GASES_LICUADOS_PETROLEO]: 'Gases licuados del petróleo',
   [FuelType.HIDROGENO]: 'Hidrógeno',
 };
-
-export interface Coordinates {
-  lat: number;
-  lon: number;
-}
 
 export type SortOption = 'price' | 'distance';
 

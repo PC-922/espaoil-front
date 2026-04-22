@@ -6,7 +6,6 @@ import { useFavorites } from '../hooks/useFavorites';
 import { getGasStations } from '../services/gasStationService';
 import { CONFIG } from '../config';
 import { formatRefreshIntervalLabel, getFavoritesRefreshIntervalMs } from '../utils/favoritesRefresh';
-import { calculateDistance } from '../utils/geo';
 
 interface FavoriteWithPrice {
   station: GasStationModel;
@@ -37,32 +36,11 @@ const selectMatchingStation = (
   const favoriteName = normalizeIdentityText(favorite.name);
   const favoriteMunicipality = normalizeIdentityText(favorite.municipality);
 
-  const byDistance = [...stations].sort((a, b) => {
-    const distanceA = calculateDistance(
-      { lat: favorite.latitude, lon: favorite.longitude },
-      { lat: a.numericLat, lon: a.numericLon }
-    );
-    const distanceB = calculateDistance(
-      { lat: favorite.latitude, lon: favorite.longitude },
-      { lat: b.numericLat, lon: b.numericLon }
-    );
-    return distanceA - distanceB;
-  });
+  const byDistance = [...stations].sort((a, b) => a.distance - b.distance);
 
   const nearest = byDistance[0];
-  const nearestDistance = nearest
-    ? calculateDistance(
-        { lat: favorite.latitude, lon: favorite.longitude },
-        { lat: nearest.numericLat, lon: nearest.numericLon }
-      )
-    : Number.POSITIVE_INFINITY;
-  const nearCandidates = byDistance.filter((station) => {
-    const distance = calculateDistance(
-      { lat: favorite.latitude, lon: favorite.longitude },
-      { lat: station.numericLat, lon: station.numericLon }
-    );
-    return distance <= nearestDistance + 0.05;
-  });
+  const nearestDistance = nearest ? nearest.distance : Number.POSITIVE_INFINITY;
+  const nearCandidates = byDistance.filter((station) => station.distance <= nearestDistance + 0.05);
 
   const exactMatch = nearCandidates.find((station) => {
     return (
@@ -135,6 +113,7 @@ const fetchStationsForFavorite = async (fav: { latitude: number; longitude: numb
     lon: fav.longitude,
     radiusKm: 0.5,
     gasType,
+    sortBy: 'distance',
   });
 
   if (primary.length > 0) {
@@ -146,6 +125,7 @@ const fetchStationsForFavorite = async (fav: { latitude: number; longitude: numb
     lon: fav.longitude,
     radiusKm: 2,
     gasType,
+    sortBy: 'distance',
   });
 
   return fallback;
@@ -235,13 +215,10 @@ export const Favorites: React.FC = () => {
             town: fav.municipality,
             municipality: fav.municipality,
             schedule: fav.lastKnownSchedule ?? 'Cargando...',
-            price: fav.lastKnownPrice?.toString() ?? 'N/D',
-            latitude: fav.latitude.toString(),
-            longitude: fav.longitude.toString(),
+            price: fav.lastKnownPrice ?? 0,
+            latitude: fav.latitude,
+            longitude: fav.longitude,
             distance: fav.distance ?? 0,
-            numericPrice: fav.lastKnownPrice ?? 0,
-            numericLat: fav.latitude,
-            numericLon: fav.longitude,
           },
           loading: true,
         });
@@ -287,13 +264,10 @@ export const Favorites: React.FC = () => {
                 town: fav.municipality,
                 municipality: fav.municipality,
                 schedule: fav.lastKnownSchedule ?? 'N/D',
-                price: fav.lastKnownPrice?.toString() ?? 'N/D',
-                latitude: fav.latitude.toString(),
-                longitude: fav.longitude.toString(),
+                price: fav.lastKnownPrice ?? 0,
+                latitude: fav.latitude,
+                longitude: fav.longitude,
                 distance: fav.distance ?? 0,
-                numericPrice: fav.lastKnownPrice ?? 0,
-                numericLat: fav.latitude,
-                numericLon: fav.longitude,
               },
               loading: false,
             });
@@ -308,13 +282,10 @@ export const Favorites: React.FC = () => {
                 town: fav.municipality,
                 municipality: fav.municipality,
                 schedule: fav.lastKnownSchedule ?? 'Error',
-                price: fav.lastKnownPrice?.toString() ?? 'N/D',
-                latitude: fav.latitude.toString(),
-                longitude: fav.longitude.toString(),
+                price: fav.lastKnownPrice ?? 0,
+                latitude: fav.latitude,
+                longitude: fav.longitude,
                 distance: fav.distance ?? 0,
-                numericPrice: fav.lastKnownPrice ?? 0,
-                numericLat: fav.latitude,
-                numericLon: fav.longitude,
               },
               loading: false,
             });
@@ -355,7 +326,7 @@ export const Favorites: React.FC = () => {
 
   const sortedFavorites = Array.from(favoritesWithPrices.entries()).sort(([, a], [, b]) => {
     // Ordenar por precio (más barato primero)
-    return a.station.numericPrice - b.station.numericPrice;
+    return a.station.price - b.station.price;
   });
 
   return (

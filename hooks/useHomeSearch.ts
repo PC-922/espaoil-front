@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { CONFIG } from '../config';
 import { getGasStations } from '../services/gasStationService';
 import { FuelType, GasStationModel, SortOption } from '../types';
@@ -97,6 +97,7 @@ export const useHomeSearch = () => {
   const [locationStatus, setLocationStatus] = useState<'idle' | 'locating' | 'success' | 'error'>('idle');
   const [sortBy, setSortBy] = useState<SortOption>(storedState?.sortBy ?? 'price');
   const [searched, setSearched] = useState<boolean>(storedState?.searched ?? false);
+  const lastSearchCoords = useRef<{ lat: number; lon: number } | null>(null);
 
   useEffect(() => {
     const stateToPersist: HomePersistedState = {
@@ -132,14 +133,28 @@ export const useHomeSearch = () => {
     };
   }, [fuelType, radius, sortBy, stations, searched, searchMode]);
 
-  const sortedStations = useMemo(() => {
-    return [...stations].sort((a, b) => {
-      if (sortBy === 'price') {
-        return a.numericPrice - b.numericPrice;
+  // Re-fetch with new sort when user changes sortBy (only if a previous search exists)
+  useEffect(() => {
+    if (!searched || !lastSearchCoords.current) return;
+    let cancelled = false;
+
+    const refetch = async () => {
+      setLoading(true);
+      try {
+        const { lat, lon } = lastSearchCoords.current!;
+        const data = await getGasStations({ lat, lon, radiusKm: radius, gasType: fuelType, sortBy });
+        if (!cancelled) setStations(data);
+      } catch (error) {
+        console.error('Failed to re-fetch sorted gas stations', error);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      return a.distance - b.distance;
-    });
-  }, [stations, sortBy]);
+    };
+
+    refetch();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortBy]);
 
   useEffect(() => {
     let cancelled = false;
@@ -278,11 +293,13 @@ export const useHomeSearch = () => {
       }
 
       setLocationStatus('success');
+      lastSearchCoords.current = { lat, lon };
       const data = await getGasStations({
         lat,
         lon,
         radiusKm: radius,
         gasType: fuelType,
+        sortBy,
       });
       setStations(data);
       setSearched(true);
@@ -322,7 +339,6 @@ export const useHomeSearch = () => {
     setSortBy,
     searched,
     stations,
-    sortedStations,
     handleSearch,
   };
 };
