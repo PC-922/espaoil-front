@@ -1,4 +1,4 @@
-import { FavoriteStation, GasStationModel } from '@/types';
+import { FavoriteStation, GasStationModel, FuelType } from '@/types';
 
 const FAVORITES_STORAGE_KEY = 'espaoil.favorites';
 
@@ -42,9 +42,9 @@ const getIdentityValues = (input: {
   };
 };
 
-export const generateStationIdFromModel = (station: GasStationModel): string => {
+export const generateStationIdFromModel = (station: GasStationModel, fuelType: FuelType): string => {
   const { identityTrader, identityName, municipality } = getIdentityValues(station);
-  return generateStationId(station.latitude, station.longitude, identityTrader, identityName, municipality);
+  return generateStationId(station.latitude, station.longitude, fuelType, identityTrader, identityName, municipality);
 };
 
 const normalizeStationText = (value: string): string => {
@@ -57,11 +57,12 @@ const normalizeStationText = (value: string): string => {
 };
 
 /**
- * Genera un ID único para una gasolinera basado en sus coordenadas
+ * Genera un ID único para una gasolinera basado en sus coordenadas y tipo de combustible
  */
 export const generateStationId = (
   lat: number,
   lon: number,
+  fuelType: FuelType,
   trader = '',
   name = '',
   municipality = ''
@@ -71,10 +72,10 @@ export const generateStationId = (
   const municipalityKey = normalizeStationText(municipality);
 
   if (!traderKey && !nameKey && !municipalityKey) {
-    return `${lat}-${lon}`;
+    return `${lat}-${lon}-${fuelType}`;
   }
 
-  return `${lat}-${lon}::${traderKey}::${nameKey}::${municipalityKey}`;
+  return `${lat}-${lon}-${fuelType}::${traderKey}::${nameKey}::${municipalityKey}`;
 };
 
 /**
@@ -122,6 +123,11 @@ export const getFavorites = (): FavoriteStation[] => {
 
       const { identityTrader, identityName, displayTrader, displayName, municipality } = getIdentityValues(candidate);
 
+      // Skip favorites without fuelType (legacy data) - they will be discarded
+      if (!candidate.fuelType || !Object.values(FuelType).includes(candidate.fuelType)) {
+        return [];
+      }
+
       if (
         Number.isNaN(latitude) ||
         Number.isNaN(longitude)
@@ -130,12 +136,13 @@ export const getFavorites = (): FavoriteStation[] => {
       }
 
       const normalized: FavoriteStation = {
-        id: generateStationId(latitude, longitude, identityTrader, identityName, municipality),
+        id: generateStationId(latitude, longitude, candidate.fuelType as FuelType, identityTrader, identityName, municipality),
         trader: displayTrader,
         name: displayName,
         municipality,
         latitude,
         longitude,
+        fuelType: candidate.fuelType as FuelType,
         distance: Number.isNaN(distance ?? NaN) ? undefined : distance,
         lastKnownPrice: Number.isNaN(lastKnownPrice ?? NaN) ? undefined : lastKnownPrice,
         lastKnownSchedule: typeof candidate.lastKnownSchedule === 'string' ? candidate.lastKnownSchedule : undefined,
@@ -179,10 +186,10 @@ export const saveFavorites = (favorites: FavoriteStation[]): void => {
 /**
  * Añade una gasolinera a favoritos
  */
-export const addFavorite = (station: GasStationModel): void => {
+export const addFavorite = (station: GasStationModel, fuelType: FuelType): void => {
   const favorites = getFavorites();
   const { displayTrader, displayName, municipality } = getIdentityValues(station);
-  const id = generateStationIdFromModel(station);
+  const id = generateStationIdFromModel(station, fuelType);
 
   // Evitar duplicados
   if (favorites.some((fav) => fav.id === id)) {
@@ -196,6 +203,7 @@ export const addFavorite = (station: GasStationModel): void => {
     municipality,
     latitude: station.latitude,
     longitude: station.longitude,
+    fuelType,
     distance: station.distance,
     lastKnownPrice: station.price > 0 ? station.price : undefined,
     lastKnownSchedule: station.schedule,
@@ -220,6 +228,7 @@ export const removeFavorite = (id: string): void => {
  */
 export const isFavorite = (
   stationOrLat: GasStationModel | number,
+  fuelTypeOrLon?: FuelType | number,
   lon?: number,
   traderArg = '',
   nameArg = '',
@@ -227,16 +236,38 @@ export const isFavorite = (
 ): boolean => {
   const favorites = getFavorites();
   if (typeof stationOrLat === 'number') {
-    const hasDescriptor = Boolean(traderArg || nameArg || municipalityArg);
-    if (!hasDescriptor) {
-      return favorites.some((fav) => fav.latitude === stationOrLat && fav.longitude === (lon ?? 0));
-    }
+    // Legacy: isFavorite(lat, lon, trader, name, municipality)
+    // New: isFavorite(lat, fuelType, lon, trader, name, municipality)
+    if (typeof fuelTypeOrLon === 'number') {
+      // Legacy call: (lat, lon, trader, name, municipality)
+      const hasDescriptor = Boolean(traderArg || nameArg || municipalityArg);
+      if (!hasDescriptor) {
+        return favorites.some((fav) => fav.latitude === stationOrLat && fav.longitude === (fuelTypeOrLon ?? 0));
+      }
+      // This is legacy and won't work with new fuelType requirement
+      // Callers should use new signature
+      return false;
+    } else {
+      // New call: (lat, fuelType, lon, trader, name, municipality)
+      const fuelType = fuelTypeOrLon;
+      if (!fuelType || !Object.values(FuelType).includes(fuelType)) {
+        return false;
+      }
+      const hasDescriptor = Boolean(traderArg || nameArg || municipalityArg);
+      if (!hasDescriptor) {
+        return favorites.some((fav) => fav.latitude === stationOrLat && fav.longitude === (lon ?? 0) && fav.fuelType === fuelType);
+      }
 
-    const id = generateStationId(stationOrLat, lon ?? 0, traderArg, nameArg, municipalityArg);
-    return favorites.some((fav) => fav.id === id);
+      const id = generateStationId(stationOrLat, lon ?? 0, fuelType, traderArg, nameArg, municipalityArg);
+      return favorites.some((fav) => fav.id === id);
+    }
   }
 
-  const id = generateStationIdFromModel(stationOrLat);
+  const fuelType = fuelTypeOrLon;
+  if (!fuelType || typeof fuelType !== 'string' || !Object.values(FuelType).includes(fuelType as FuelType)) {
+    return false;
+  }
+  const id = generateStationIdFromModel(stationOrLat, fuelType as FuelType);
   return favorites.some((fav) => fav.id === id);
 };
 
@@ -244,9 +275,9 @@ export const isFavorite = (
  * Alterna el estado de favorito de una gasolinera
  * @returns true si se añadió a favoritos, false si se quitó
  */
-export const toggleFavorite = (station: GasStationModel): boolean => {
+export const toggleFavorite = (station: GasStationModel, fuelType: FuelType): boolean => {
   const { displayTrader, displayName, municipality } = getIdentityValues(station);
-  const id = generateStationIdFromModel(station);
+  const id = generateStationIdFromModel(station, fuelType);
   const favorites = getFavorites();
   const existingIndex = favorites.findIndex((fav) => fav.id === id);
 
@@ -265,6 +296,7 @@ export const toggleFavorite = (station: GasStationModel): boolean => {
     municipality,
     latitude: station.latitude,
     longitude: station.longitude,
+    fuelType,
     distance: station.distance,
     lastKnownPrice: station.price > 0 ? station.price : undefined,
     lastKnownSchedule: station.schedule,

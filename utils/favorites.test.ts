@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GasStationModel } from '@/types';
+import { GasStationModel, FuelType } from '@/types';
 import {
   addFavorite,
   generateStationId,
@@ -23,6 +23,7 @@ describe('favorites utilities', () => {
     latitude: 40.416729,
     longitude: -3.703339,
     distance: 2.5,
+    fuelType: FuelType.GASOLINA_95_E5,
   };
 
   beforeEach(() => {
@@ -31,20 +32,20 @@ describe('favorites utilities', () => {
   });
 
   describe('generateStationId', () => {
-    it('genera un ID basado en coordenadas', () => {
-      const id = generateStationId(40.416729, -3.703339);
-      expect(id).toBe('40.416729--3.703339');
+    it('genera un ID basado en coordenadas y combustible', () => {
+      const id = generateStationId(40.416729, -3.703339, FuelType.GASOLINA_95_E5);
+      expect(id).toBe('40.416729--3.703339-GASOLINA_95_E5');
     });
 
-    it('distingue estaciones con mismas coordenadas por identidad', () => {
-      const id1 = generateStationId(28.119, -16.74, 'Gasolinera', 'GMOIL', 'Adeje');
-      const id2 = generateStationId(28.119, -16.74, 'Gasolinera', 'TGAS-TU TREBOL', 'Adeje');
+    it('distingue estaciones con mismas coordenadas por combustible e identidad', () => {
+      const id1 = generateStationId(28.119, -16.74, FuelType.GASOLINA_95_E5, 'Gasolinera', 'GMOIL', 'Adeje');
+      const id2 = generateStationId(28.119, -16.74, FuelType.GASOIL_A, 'Gasolinera', 'GMOIL', 'Adeje');
       expect(id1).not.toBe(id2);
     });
 
-    it('genera IDs diferentes para coordenadas diferentes', () => {
-      const id1 = generateStationId(40.416729, -3.703339);
-      const id2 = generateStationId(41.5, -2.8);
+    it('genera IDs diferentes para combustibles diferentes', () => {
+      const id1 = generateStationId(40.416729, -3.703339, FuelType.GASOLINA_95_E5);
+      const id2 = generateStationId(40.416729, -3.703339, FuelType.GASOIL_A);
       expect(id1).not.toBe(id2);
     });
   });
@@ -58,12 +59,13 @@ describe('favorites utilities', () => {
     it('devuelve favoritos guardados en localStorage', () => {
       const mockFavorites = [
         {
-          id: '40.416729--3.703339',
+          id: '40.416729--3.703339-GASOLINA_95_E5',
           trader: 'REPSOL',
           name: 'E.S. GRAN VIA',
           municipality: 'MADRID',
           latitude: 40.416729,
           longitude: -3.703339,
+          fuelType: FuelType.GASOLINA_95_E5,
           addedAt: 1712345678901,
         },
       ];
@@ -77,6 +79,7 @@ describe('favorites utilities', () => {
         municipality: 'MADRID',
         latitude: 40.416729,
         longitude: -3.703339,
+        fuelType: FuelType.GASOLINA_95_E5,
       });
       expect(favorites[0].id).toContain('40.416729--3.703339');
     });
@@ -87,7 +90,7 @@ describe('favorites utilities', () => {
       expect(favorites).toEqual([]);
     });
 
-    it('filtra favoritos con estructura inválida', () => {
+    it('filtra favoritos con estructura inválida y sin fuelType (migración)', () => {
       const mixedData = [
         {
           id: '40.416729--3.703339',
@@ -97,6 +100,7 @@ describe('favorites utilities', () => {
           latitude: 40.416729,
           longitude: -3.703339,
           addedAt: 1712345678901,
+          // Sin fuelType - será filtrado como dato legacy
         },
         { invalid: 'object' }, // estructura inválida
         null,
@@ -104,8 +108,8 @@ describe('favorites utilities', () => {
       localStorage.setItem('espaoil.favorites', JSON.stringify(mixedData));
 
       const favorites = getFavorites();
-      expect(favorites).toHaveLength(1);
-      expect(favorites[0].id).toContain('40.416729--3.703339');
+      // Los favoritos sin fuelType se descartan durante la migración
+      expect(favorites).toHaveLength(0);
     });
   });
 
@@ -113,12 +117,13 @@ describe('favorites utilities', () => {
     it('guarda favoritos en localStorage', () => {
       const favorites = [
         {
-          id: '40.416729--3.703339',
+          id: '40.416729--3.703339-GASOLINA_95_E5',
           trader: 'REPSOL',
           name: 'E.S. GRAN VIA',
           municipality: 'MADRID',
           latitude: 40.416729,
           longitude: -3.703339,
+          fuelType: FuelType.GASOLINA_95_E5,
           addedAt: 1712345678901,
         },
       ];
@@ -145,7 +150,7 @@ describe('favorites utilities', () => {
 
   describe('addFavorite', () => {
     it('añade una gasolinera a favoritos', () => {
-      addFavorite(mockStation);
+      addFavorite(mockStation, mockStation.fuelType!);
 
       const favorites = getFavorites();
       expect(favorites).toHaveLength(1);
@@ -158,14 +163,15 @@ describe('favorites utilities', () => {
         distance: 2.5,
         lastKnownPrice: 1.279,
         lastKnownSchedule: 'L-D: 24H',
+        fuelType: FuelType.GASOLINA_95_E5,
       });
       expect(favorites[0].id).toContain('40.416729--3.703339');
       expect(favorites[0].addedAt).toBeGreaterThan(0);
     });
 
     it('no añade duplicados', () => {
-      addFavorite(mockStation);
-      addFavorite(mockStation);
+      addFavorite(mockStation, mockStation.fuelType!);
+      addFavorite(mockStation, mockStation.fuelType!);
 
       const favorites = getFavorites();
       expect(favorites).toHaveLength(1);
@@ -176,10 +182,11 @@ describe('favorites utilities', () => {
         ...mockStation,
         latitude: 41.5,
         longitude: -2.8,
+        fuelType: FuelType.GASOIL_A,
       };
 
-      addFavorite(mockStation);
-      addFavorite(station2);
+      addFavorite(mockStation, mockStation.fuelType!);
+      addFavorite(station2, station2.fuelType!);
 
       const favorites = getFavorites();
       expect(favorites).toHaveLength(2);
@@ -188,7 +195,7 @@ describe('favorites utilities', () => {
 
   describe('removeFavorite', () => {
     it('elimina un favorito por ID', () => {
-      addFavorite(mockStation);
+      addFavorite(mockStation, mockStation.fuelType!);
       const id = getFavorites()[0].id;
 
       removeFavorite(id);
@@ -203,10 +210,11 @@ describe('favorites utilities', () => {
         latitude: 41.5,
         longitude: -2.8,
         trader: 'CEPSA',
+        fuelType: FuelType.GASOIL_A,
       };
 
-      addFavorite(mockStation);
-      addFavorite(station2);
+      addFavorite(mockStation, mockStation.fuelType!);
+      addFavorite(station2, station2.fuelType!);
 
       const id = getFavorites().find((fav) => fav.trader === 'REPSOL')?.id ?? '';
       removeFavorite(id);
@@ -217,7 +225,7 @@ describe('favorites utilities', () => {
     });
 
     it('no hace nada si el ID no existe', () => {
-      addFavorite(mockStation);
+      addFavorite(mockStation, mockStation.fuelType!);
       removeFavorite('non-existent-id');
 
       const favorites = getFavorites();
@@ -227,20 +235,20 @@ describe('favorites utilities', () => {
 
   describe('isFavorite', () => {
     it('devuelve true si la gasolinera es favorita', () => {
-      addFavorite(mockStation);
-      const result = isFavorite(mockStation.latitude, mockStation.longitude);
+      addFavorite(mockStation, mockStation.fuelType!);
+      const result = isFavorite(mockStation, mockStation.fuelType!);
       expect(result).toBe(true);
     });
 
     it('devuelve false si la gasolinera no es favorita', () => {
-      const result = isFavorite(mockStation.latitude, mockStation.longitude);
+      const result = isFavorite(mockStation, mockStation.fuelType!);
       expect(result).toBe(false);
     });
   });
 
   describe('toggleFavorite', () => {
     it('añade a favoritos si no existe y devuelve true', () => {
-      const result = toggleFavorite(mockStation);
+      const result = toggleFavorite(mockStation, mockStation.fuelType!);
 
       expect(result).toBe(true);
       const favorites = getFavorites();
@@ -248,8 +256,8 @@ describe('favorites utilities', () => {
     });
 
     it('quita de favoritos si existe y devuelve false', () => {
-      addFavorite(mockStation);
-      const result = toggleFavorite(mockStation);
+      addFavorite(mockStation, mockStation.fuelType!);
+      const result = toggleFavorite(mockStation, mockStation.fuelType!);
 
       expect(result).toBe(false);
       const favorites = getFavorites();
@@ -257,9 +265,9 @@ describe('favorites utilities', () => {
     });
 
     it('alterna correctamente el estado varias veces', () => {
-      const result1 = toggleFavorite(mockStation); // añadir
-      const result2 = toggleFavorite(mockStation); // quitar
-      const result3 = toggleFavorite(mockStation); // añadir
+      const result1 = toggleFavorite(mockStation, mockStation.fuelType!); // añadir
+      const result2 = toggleFavorite(mockStation, mockStation.fuelType!); // quitar
+      const result3 = toggleFavorite(mockStation, mockStation.fuelType!); // añadir
 
       expect(result1).toBe(true);
       expect(result2).toBe(false);
