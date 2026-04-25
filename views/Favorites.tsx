@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Heart, RefreshCw, Search } from 'lucide-react';
+import { Heart, Search } from 'lucide-react';
 import { FuelType, FUEL_LABELS, GasStationModel } from '../types';
 import { GasStationCard } from '../components/GasStationCard';
 import { useFavorites } from '../hooks/useFavorites';
 import { getGasStations } from '../services/gasStationService';
 import { CONFIG } from '../config';
-import { formatRefreshIntervalLabel, getFavoritesRefreshIntervalMs } from '../utils/favoritesRefresh';
+import { getSearchCache, setSearchCache } from '../utils/searchCache';
 
 interface FavoriteWithPrice {
   station: GasStationModel;
@@ -80,6 +80,7 @@ const applyFavoriteDistance = (station: GasStationModel, favoriteDistance?: numb
 };
 
 const FAVORITES_PRICE_CACHE_KEY = 'espaoil.favorites.price-cache';
+const FAVORITES_REFRESH_INTERVAL_MS = 15 * 60 * 1000; // 15 minutos
 
 const getPriceCache = (): Record<string, FavoritePriceCacheEntry> => {
   try {
@@ -140,9 +141,7 @@ export const Favorites: React.FC = () => {
     new Map()
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [refreshTick, setRefreshTick] = useState<number>(0);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
-  const [refreshIntervalMs, setRefreshIntervalMs] = useState<number>(() => getFavoritesRefreshIntervalMs());
 
   const handleFuelTypeChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -150,21 +149,6 @@ export const Favorites: React.FC = () => {
     },
     []
   );
-
-  const handleManualRefresh = useCallback(() => {
-    setRefreshTick((prev) => prev + 1);
-  }, []);
-
-  useEffect(() => {
-    const handleFocus = () => {
-      setRefreshIntervalMs(getFavoritesRefreshIntervalMs());
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, []);
 
   // Fetch de precios para favoritos
   useEffect(() => {
@@ -180,18 +164,13 @@ export const Favorites: React.FC = () => {
       const now = Date.now();
       const cache = getPriceCache();
       const newMap = new Map<string, FavoriteWithPrice>();
-      const forceRefresh = refreshTick > 0;
       const favoritesToFetch = favorites.filter((fav) => {
-        if (forceRefresh) {
-          return true;
-        }
-
         const cached = cache[fav.id];
         if (!cached) {
           return true;
         }
 
-        const isFresh = now - cached.fetchedAt < refreshIntervalMs;
+        const isFresh = now - cached.fetchedAt < FAVORITES_REFRESH_INTERVAL_MS;
         const sameFuelType = cached.fuelType === fuelType;
         if (isFresh && sameFuelType) {
           newMap.set(fav.id, {
@@ -229,10 +208,32 @@ export const Favorites: React.FC = () => {
       // Fetch de precios para cada favorito
       const promises = favoritesToFetch.map(async (fav) => {
         try {
+          // Intentar obtener del cache global primero
+          const cachedGlobal = getSearchCache(fav.latitude, fav.longitude, 0.5, fuelType);
+          if (cachedGlobal && cachedGlobal.length > 0) {
+            const matchedStation = selectMatchingStation(fav, cachedGlobal);
+            if (matchedStation) {
+              cache[fav.id] = {
+                station: matchedStation,
+                fuelType,
+                fetchedAt: now,
+              };
+              newMap.set(fav.id, {
+                station: applyFavoriteDistance(matchedStation, fav.distance),
+                loading: false,
+              });
+              return;
+            }
+          }
+
+          // Si no hay cache global, hacer fetch
           const stations = await fetchStationsForFavorite(fav, fuelType);
 
           // Buscar la gasolinera más cercana (debería ser la misma)
           if (stations.length > 0 && !cancelled) {
+            // Guardar en cache global
+            setSearchCache(fav.latitude, fav.longitude, 0.5, fuelType, stations);
+
             const matchedStation = selectMatchingStation(fav, stations);
             if (!matchedStation) {
               return;
@@ -322,7 +323,7 @@ export const Favorites: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [favorites, fuelType, refreshIntervalMs, refreshTick]);
+  }, [favorites, fuelType]);
 
   const sortedFavorites = Array.from(favoritesWithPrices.entries()).sort(([, a], [, b]) => {
     // Ordenar por precio (más barato primero)
@@ -371,16 +372,6 @@ export const Favorites: React.FC = () => {
                 </svg>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={handleManualRefresh}
-              disabled={isLoading}
-              className="ui-radius-control inline-flex min-h-9 items-center gap-2 border border-red-100 bg-[var(--color-accent-soft)] px-3 py-2 text-xs font-bold text-[var(--color-accent)] transition-colors hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
-              Actualizar precios ahora
-            </button>
           </div>
         </section>
       )}
@@ -444,13 +435,10 @@ export const Favorites: React.FC = () => {
         <h2 className="text-sm font-black uppercase tracking-wide text-gray-900">
           Sobre los favoritos
         </h2>
-        <div className="space-y-2 text-sm text-gray-700">
-          <p>Tus favoritos se guardan en este navegador.</p>
-          <p>Usa el corazón para añadir o quitar estaciones en cualquier momento.</p>
-          <p>Los precios se actualizan automaticamente cada {formatRefreshIntervalLabel(refreshIntervalMs)}.</p>
-          <p>Si quieres, puedes pulsar "Actualizar precios ahora" para refrescarlos al instante.</p>
-          <p>En Configuracion puedes cambiar cada cuanto tiempo se actualizan los precios.</p>
-        </div>
+         <div className="space-y-2 text-sm text-gray-700">
+           <p>Tus favoritos se guardan en este navegador.</p>
+           <p>Usa el corazón para añadir o quitar estaciones en cualquier momento.</p>
+         </div>
       </section>
     </div>
   );
