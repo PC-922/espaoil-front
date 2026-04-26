@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { FavoriteStation, GasStationModel } from '@/types';
+import { FavoriteStation, GasStationModel, FuelType } from '@/types';
 import {
   addFavorite as addFavoriteUtil,
   generateStationId,
@@ -31,8 +31,8 @@ export const useFavorites = () => {
     };
   }, []);
 
-  const addFavorite = useCallback((station: GasStationModel) => {
-    addFavoriteUtil(station);
+  const addFavorite = useCallback((station: GasStationModel, fuelType: FuelType) => {
+    addFavoriteUtil(station, fuelType);
     setFavorites(getFavoritesUtil());
   }, []);
 
@@ -41,8 +41,8 @@ export const useFavorites = () => {
     setFavorites(getFavoritesUtil());
   }, []);
 
-  const toggleFavorite = useCallback((station: GasStationModel): boolean => {
-    const isNowFavorite = toggleFavoriteUtil(station);
+  const toggleFavorite = useCallback((station: GasStationModel, fuelType: FuelType): boolean => {
+    const isNowFavorite = toggleFavoriteUtil(station, fuelType);
     setFavorites(getFavoritesUtil());
     return isNowFavorite;
   }, []);
@@ -50,22 +50,41 @@ export const useFavorites = () => {
   const isFavorite = useCallback(
     (
       stationOrLat: GasStationModel | number,
+      fuelTypeOrLon?: FuelType | number,
       lon?: number,
       trader = '',
       name = '',
       municipality = ''
     ): boolean => {
       if (typeof stationOrLat === 'number') {
-        const hasDescriptor = Boolean(trader || name || municipality);
-        if (!hasDescriptor) {
-          return favorites.some((fav) => fav.latitude === stationOrLat && fav.longitude === (lon ?? 0));
+        if (typeof fuelTypeOrLon === 'number') {
+          // Legacy: isFavorite(lat, lon, trader, name, municipality)
+          const hasDescriptor = Boolean(trader || name || municipality);
+          if (!hasDescriptor) {
+            return favorites.some((fav) => fav.latitude === stationOrLat && fav.longitude === fuelTypeOrLon);
+          }
+          // Legacy with descriptor won't work anymore
+          return false;
+        } else {
+          // New: isFavorite(lat, fuelType, lon, trader, name, municipality)
+          const fuelType = fuelTypeOrLon;
+          if (!fuelType || !Object.values(FuelType).includes(fuelType)) {
+            return false;
+          }
+          const hasDescriptor = Boolean(trader || name || municipality);
+          if (!hasDescriptor) {
+            return favorites.some((fav) => fav.latitude === stationOrLat && fav.longitude === (lon ?? 0) && fav.fuelType === fuelType);
+          }
+          const id = generateStationId(stationOrLat, lon ?? 0, fuelType, trader, name, municipality);
+          return favorites.some((fav) => fav.id === id);
         }
-
-        const id = generateStationId(stationOrLat, lon ?? 0, trader, name, municipality);
-        return favorites.some((fav) => fav.id === id);
       }
 
-      const id = generateStationIdFromModel(stationOrLat);
+      const fuelType = fuelTypeOrLon;
+      if (!fuelType || typeof fuelType !== 'string' || !Object.values(FuelType).includes(fuelType as FuelType)) {
+        return false;
+      }
+      const id = generateStationIdFromModel(stationOrLat, fuelType as FuelType);
       return favorites.some((fav) => fav.id === id);
     },
     [favorites]

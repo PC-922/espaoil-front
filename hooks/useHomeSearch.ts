@@ -3,6 +3,7 @@ import { CONFIG } from '../config';
 import { getGasStations } from '../services/gasStationService';
 import { FuelType, GasStationModel, SortOption } from '../types';
 import { AddressSuggestion, geocodeAddress, searchAddressSuggestions } from '../utils/geocoding';
+import { getSearchCache, setSearchCache } from '../utils/searchCache';
 
 const HOME_STATE_STORAGE_KEY = 'espaoil.homeState';
 
@@ -133,26 +134,18 @@ export const useHomeSearch = () => {
     };
   }, [fuelType, radius, sortBy, stations, searched, searchMode]);
 
-  // Re-fetch with new sort when user changes sortBy (only if a previous search exists)
+  // Re-sort stations when sortBy changes (no API call, just reorder in memory)
   useEffect(() => {
-    if (!searched || !lastSearchCoords.current) return;
-    let cancelled = false;
+    if (!searched || stations.length === 0) return;
 
-    const refetch = async () => {
-      setLoading(true);
-      try {
-        const { lat, lon } = lastSearchCoords.current!;
-        const data = await getGasStations({ lat, lon, radiusKm: radius, gasType: fuelType, sortBy });
-        if (!cancelled) setStations(data);
-      } catch (error) {
-        console.error('Failed to re-fetch sorted gas stations', error);
-      } finally {
-        if (!cancelled) setLoading(false);
+    const sortedStations = [...stations].sort((a, b) => {
+      if (sortBy === 'price') {
+        return a.price - b.price;
       }
-    };
+      return a.distance - b.distance;
+    });
 
-    refetch();
-    return () => { cancelled = true; };
+    setStations(sortedStations);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy]);
 
@@ -294,6 +287,18 @@ export const useHomeSearch = () => {
 
       setLocationStatus('success');
       lastSearchCoords.current = { lat, lon };
+
+      // Intentar obtener del cache global primero
+      const cachedStations = getSearchCache(lat, lon, radius, fuelType);
+      if (cachedStations && cachedStations.length > 0) {
+        setStations(cachedStations);
+        setSearched(true);
+        setAddressSuggestions([]);
+        setLoading(false);
+        return;
+      }
+
+      // Si no hay cache válido, hacer fetch
       const data = await getGasStations({
         lat,
         lon,
@@ -301,6 +306,10 @@ export const useHomeSearch = () => {
         gasType: fuelType,
         sortBy,
       });
+
+      // Guardar en cache global
+      setSearchCache(lat, lon, radius, fuelType, data);
+
       setStations(data);
       setSearched(true);
       setAddressSuggestions([]);
@@ -318,7 +327,7 @@ export const useHomeSearch = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchMode, addressQuery, selectedSuggestion, radius, fuelType]);
+  }, [searchMode, addressQuery, selectedSuggestion, radius, fuelType, sortBy]);
 
   return {
     searchMode,

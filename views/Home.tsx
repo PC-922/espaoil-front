@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LocateFixed, MapPin, Search, X } from 'lucide-react';
-import { FuelType, FUEL_LABELS, GasStationModel } from '../types';
-import { Button } from '../components/Button';
-import { GasStationCard } from '../components/GasStationCard';
-import { useHomeSearch } from '../hooks/useHomeSearch';
-import { useFavorites } from '../hooks/useFavorites';
-import { AddressSuggestion } from '../utils/geocoding';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {LocateFixed, MapPin, Search, X} from 'lucide-react';
+import {FUEL_LABELS, FuelType, GasStationModel} from '../types';
+import {Button} from '../components/Button';
+import {GasStationCard} from '../components/GasStationCard';
+import {useHomeSearch} from '../hooks/useHomeSearch';
+import {useFavorites} from '../hooks/useFavorites';
+import {AddressSuggestion} from '../utils/geocoding';
 
 // Siguiendo Vercel best practice: rerender-no-inline-components
 // Componente memoizado para evitar crear funciones inline en cada render
@@ -53,7 +53,7 @@ export const Home: React.FC = () => {
     stations,
     handleSearch,
   } = useHomeSearch();
-  const { favorites, isFavorite, toggleFavorite } = useFavorites();
+  const {isFavorite, toggleFavorite } = useFavorites();
   const addressFieldRef = useRef<HTMLDivElement | null>(null);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
 
@@ -315,24 +315,24 @@ export const Home: React.FC = () => {
             </button>
           </div>
 
-          {stations.length === 0 ? (
-            <div className="ui-card py-8 text-center">
-              <Search size={42} className="mx-auto mb-2 text-gray-300" />
-              <p className="font-semibold text-gray-700">No se encontraron gasolineras</p>
-              <p className="text-sm text-gray-500">Prueba con un radio de busqueda mayor.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {stations.map((station: GasStationModel, index: number) => (
-                <GasStationCard
-                  key={`${station.latitude}-${station.longitude}-${index}`}
-                  station={station}
-                  isFavorite={isFavorite(station)}
-                  onToggleFavorite={() => toggleFavorite(station)}
-                />
-              ))}
-            </div>
-          )}
+           {stations.length === 0 ? (
+             <div className="ui-card py-8 text-center">
+               <Search size={42} className="mx-auto mb-2 text-gray-300" />
+               <p className="font-semibold text-gray-700">No se encontraron gasolineras</p>
+               <p className="text-sm text-gray-500">Prueba con un radio de busqueda mayor.</p>
+             </div>
+           ) : (
+             <div className="space-y-3">
+               {stations.map((station: GasStationModel, index: number) => (
+                 <GasStationCard
+                   key={`${station.latitude}-${station.longitude}-${index}`}
+                   station={station}
+                   isFavorite={isFavorite(station, fuelType)}
+                   onToggleFavorite={() => toggleFavorite(station, fuelType)}
+                 />
+               ))}
+             </div>
+           )}
         </section>
       )}
 

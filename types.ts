@@ -9,6 +9,7 @@ export interface GasStationModel {
   latitude: number;
   longitude: number;
   distance: number; // pre-calculated by server (km)
+  fuelType?: FuelType; // Optional: contextual fuel type when displayed
 }
 
 export enum FuelType {
@@ -56,12 +57,13 @@ export const MAP_PROVIDER_LABELS: Record<MapProvider, string> = {
 };
 
 export interface FavoriteStation {
-  id: string; // `${lat}-${lon}`
+  id: string; // `${lat}-${lon}-${fuelType}`
   trader: string;
   name: string;
   municipality: string;
   latitude: number;
   longitude: number;
+  fuelType: FuelType; // Required: each favorite has a specific fuel type
   distance?: number;
   lastKnownPrice?: number;
   lastKnownSchedule?: string;

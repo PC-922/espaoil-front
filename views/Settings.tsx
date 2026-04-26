@@ -2,12 +2,6 @@ import React, { useState } from 'react';
 import { MapPinned } from 'lucide-react';
 import { MAP_PROVIDER_LABELS, MapProvider } from '../types';
 import { getMapProvider, setMapProvider } from '../utils/maps';
-import {
-  FAVORITES_REFRESH_INTERVAL_OPTIONS_MS,
-  formatRefreshIntervalLabel,
-  getFavoritesRefreshIntervalMs,
-  setFavoritesRefreshIntervalMs,
-} from '../utils/favoritesRefresh';
 
 // Constante de módulo: __APP_BUILD_DATE__ es un valor de compilación que nunca
 // cambia en runtime, por lo que no tiene sentido recalcularlo en cada render.
@@ -20,18 +14,10 @@ export const Settings: React.FC = () => {
   // Inicialización lazy: getMapProvider() es síncrono, no necesita useEffect.
   // Esto evita el ciclo render→effect→setState→render que causaba un render extra.
   const [provider, setProvider] = useState<MapProvider>(() => getMapProvider());
-  const [favoritesRefreshIntervalMs, setFavoritesRefreshIntervalState] = useState<number>(() =>
-    getFavoritesRefreshIntervalMs()
-  );
 
   const handleProviderChange = (nextProvider: MapProvider) => {
     setProvider(nextProvider);
     setMapProvider(nextProvider);
-  };
-
-  const handleFavoritesRefreshIntervalChange = (value: number) => {
-    setFavoritesRefreshIntervalState(value);
-    setFavoritesRefreshIntervalMs(value);
   };
 
   return (
@@ -69,31 +55,6 @@ export const Settings: React.FC = () => {
               />
             </label>
           ))}
-        </div>
-
-        <div className="ui-divider pt-4">
-          <h2 className="font-bold text-gray-900">Actualizacion de precios en favoritos</h2>
-          <p className="mt-1 text-sm font-medium text-gray-600">
-            Define cada cuanto tiempo se actualizan automaticamente los precios.
-          </p>
-
-          <div className="mt-3 space-y-2">
-            {FAVORITES_REFRESH_INTERVAL_OPTIONS_MS.map((optionMs) => (
-              <label
-                key={optionMs}
-                className={`ui-radius-control flex min-h-12 items-center justify-between border p-3 transition-colors ${favoritesRefreshIntervalMs === optionMs ? 'border-red-200 bg-[var(--color-accent-soft)]' : 'cursor-pointer border-[var(--color-border)] bg-white hover:bg-gray-50'}`}
-              >
-                <span className="font-semibold text-gray-800">{formatRefreshIntervalLabel(optionMs)}</span>
-                <input
-                  type="radio"
-                  name="favorites-refresh-interval"
-                  checked={favoritesRefreshIntervalMs === optionMs}
-                  onChange={() => handleFavoritesRefreshIntervalChange(optionMs)}
-                  className="h-4 w-4 accent-red-600"
-                />
-              </label>
-            ))}
-          </div>
         </div>
 
         <div className="ui-divider pt-4">
