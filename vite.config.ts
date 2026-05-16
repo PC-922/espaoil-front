@@ -74,7 +74,7 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
         proxy: {
           '/api': {
-            target: 'https://espaoilserver.padyserveroracle.duckdns.org',
+            target: 'http://espaoilserver-v7pg66dplldqk7srhg6hemdr:8080',
             changeOrigin: true,
             secure: true,
             rewrite: (path: string) => path.replace(/^\/api/, ''),
