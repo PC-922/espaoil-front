@@ -44,5 +44,3 @@ release-please-config.json
 AGENTS.md
 skills-lock.json
 vitest.setup.ts
-vite.config.ts
-tsconfig.json

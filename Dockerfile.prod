@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --prefer-offline --no-audit --legacy-peer-deps || npm install
+RUN npm ci
 
 # Copy source code
 COPY . .
