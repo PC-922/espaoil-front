@@ -3,35 +3,16 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and install dependencies
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Copy source code
+# Copy source code and build
 COPY . .
-
-# Build arguments for version info
-ARG APP_VERSION=unknown
-ARG COMMIT_SHA=unknown
-ARG BUILD_DATE=unknown
-
-# Set environment variables for build
-ENV VITE_APP_VERSION=${APP_VERSION}
-ENV VITE_COMMIT_SHA=${COMMIT_SHA}
-ENV VITE_BUILD_DATE=${BUILD_DATE}
-ENV COMMIT_SHA=${COMMIT_SHA}
-ENV npm_package_version=${APP_VERSION}
-
-# Build the application
 RUN npm run build
 
 # Runtime stage
 FROM nginx:1.27-alpine
-
-# Install curl for health checks
-RUN apk add --no-cache curl
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
@@ -41,10 +22,6 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost/ || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
