@@ -22,38 +22,38 @@ React web/PWA app to search nearby gas stations, compare by price or distance, a
 
 ## Requirements
 
-- Node.js 20+
-- npm
+- Node.js 22+
+- pnpm
 
 ## Getting started
 
 1. Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 2. Run locally:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 The app runs at `http://localhost:3000`.
 
 ## Available scripts
 
-- `npm run dev`: start development server.
-- `npm run build`: create production build.
-- `npm run preview`: preview local production build.
-- `npm run test`: run unit tests.
-- `npm run test:watch`: run tests in watch mode.
-- `npm run test:coverage`: run tests with coverage (global threshold 70%).
+- `pnpm run dev`: start development server.
+- `pnpm run build`: create production build.
+- `pnpm run preview`: preview local production build.
+- `pnpm run test`: run unit tests.
+- `pnpm run test:watch`: run tests in watch mode.
+- `pnpm run test:coverage`: run tests with coverage (global threshold 70%).
 
 ## API and configuration
 
 - Frontend consumes `'/api'` (see `config.ts`).
-- In development, Vite proxies requests to `https://espaoilserver.padyserveroracle.duckdns.org`.
+- In development, Vite proxies requests via `VITE_API_PROXY_TARGET` (default `http://localhost:8080`).
 - Default parameters:
    - `DEFAULT_SEARCH_RADIUS_KM = 20`
    - `DEFAULT_FUEL_TYPE = GASOLINA_95_E5`
@@ -78,9 +78,9 @@ The project uses `release-please` on GitHub Actions.
 
 Workflow configured in `.github/workflows/release.yml`:
 
-1. `npm ci`
-2. `npm run test`
-3. `npm run build`
+1. `pnpm install --frozen-lockfile`
+2. `pnpm run test`
+3. `pnpm run build`
 4. `release-please-action`
 
 ### Note about local release runs

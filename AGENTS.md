@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-React 19 + TypeScript + Vite PWA for searching nearby gas stations in Spain. Uses Tailwind CSS for styling, Vitest for testing, and integrates with Vercel Analytics/Speed Insights.
+React 19 + TypeScript + Vite PWA for searching nearby gas stations in Spain. Uses Tailwind CSS for styling and Vitest for testing.
 
 ---
 
@@ -10,44 +10,44 @@ React 19 + TypeScript + Vite PWA for searching nearby gas stations in Spain. Use
 
 ### Development
 ```bash
-npm run dev          # Start dev server at http://localhost:3000
+pnpm run dev          # Start dev server at http://localhost:3000
 ```
 
 ### Production
 ```bash
-npm run build        # Create production build to dist/
-npm run preview      # Preview local production build
+pnpm run build        # Create production build to dist/
+pnpm run preview      # Preview local production build
 ```
 
 ### Testing
 ```bash
-npm run test                     # Run all tests once
-npm run test:watch               # Run tests in watch mode
-npm run test:coverage            # Run with coverage (v8 provider)
+pnpm run test                     # Run all tests once
+pnpm run test:watch               # Run tests in watch mode
+pnpm run test:coverage            # Run with coverage (v8 provider)
 ```
 
 **Run a single test file:**
 ```bash
-npx vitest run path/to/file.test.ts
+pnpm exec vitest run path/to/file.test.ts
 # or
-npx vitest run hooks/useHomeSearch.test.tsx
+pnpm exec vitest run hooks/useHomeSearch.test.tsx
 ```
 
 **Run tests matching a pattern:**
 ```bash
-npx vitest run -t "restaura el estado"     # Run tests with this description
+pnpm exec vitest run -t "restaura el estado"     # Run tests with this description
 ```
 
 **Run tests in a specific file with watch mode:**
 ```bash
-npx vitest path/to/file.test.ts
+pnpm exec vitest path/to/file.test.ts
 ```
 
 ### CI Pipeline
 The release workflow (`.github/workflows/release.yml`) runs:
-1. `npm ci` - Install dependencies
-2. `npm run test` - Run tests
-3. `npm run build` - Build production bundle
+1. `pnpm install --frozen-lockfile` - Install dependencies
+2. `pnpm run test` - Run tests
+3. `pnpm run build` - Build production bundle
 
 ---
 
@@ -197,7 +197,7 @@ services → repositories, types, utils
 
 ## API Configuration
 - All API calls go through `/api` proxy
-- Development proxy: `https://espaoilserver.padyserveroracle.duckdns.org`
+- Development proxy: via `VITE_API_PROXY_TARGET` (default `http://localhost:8080`)
 - Configure via `config.ts` (not hardcoded)
 
 ---
