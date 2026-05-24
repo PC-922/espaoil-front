@@ -22,7 +22,7 @@ React web/PWA app to search nearby gas stations, compare by price or distance, a
 
 ## Requirements
 
-- Node.js 20+
+- Node.js 22+
 - pnpm
 
 ## Getting started
