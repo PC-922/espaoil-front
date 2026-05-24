@@ -36,9 +36,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.0.18
         version: 4.1.7(vitest@4.1.7)
-      dotenv:
-        specifier: ^16.0.0
-        version: 16.6.1
       jsdom:
         specifier: ^28.1.0
         version: 28.1.0
@@ -706,10 +703,6 @@ packages:
 
   dom-accessibility-api@0.5.16:
     resolution: {integrity: sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==}
-
-  dotenv@16.6.1:
-    resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
-    engines: {node: '>=12'}
 
   electron-to-chromium@1.5.361:
     resolution: {integrity: sha512-Q6Hts7N9FnJc5LeGRINFvLhCI9xZmNtTDe5ZbcVezQz7cU4a8Aua3GH1b8J2XY8Al9PF+OCwYqhgsOOheMdvkA==}
@@ -1652,8 +1645,6 @@ snapshots:
   dequal@2.0.3: {}
 
   dom-accessibility-api@0.5.16: {}
-
-  dotenv@16.6.1: {}
 
   electron-to-chromium@1.5.361: {}
 

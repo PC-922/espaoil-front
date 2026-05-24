@@ -1,6 +1,5 @@
 import path from 'path';
-import 'dotenv/config';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const clientTracePlugin = () => {
@@ -65,6 +64,7 @@ const clientTracePlugin = () => {
 };
 
 export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
   const appVersion = process.env.npm_package_version || '0.0.0';
   const commitShaRaw = process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || process.env.COMMIT_SHA || 'local';
   const commitSha = commitShaRaw === 'local' ? 'local' : commitShaRaw.slice(0, 7);
@@ -75,9 +75,9 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
         proxy: {
           '/api': {
-            target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8080',
+            target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080',
             changeOrigin: true,
-            secure: (process.env.VITE_API_PROXY_TARGET || 'http://localhost:8080').startsWith('https://'),
+            secure: (env.VITE_API_PROXY_TARGET || 'http://localhost:8080').startsWith('https://'),
             rewrite: (path: string) => path.replace(/^\/api/, ''),
           },
         },
