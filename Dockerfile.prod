@@ -3,13 +3,16 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Install pnpm explicitly (reliable bootstrap in Alpine; avoids corepack musl/glibc issues)
+RUN npm install -g pnpm@11.3.0
+
 # Copy package files and install dependencies
-COPY package*.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # Copy source code and build
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 # Runtime stage
 FROM nginx:1.27-alpine
