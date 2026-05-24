@@ -32,8 +32,9 @@ coverage
 .eslintcache
 
 # Environment files
-.env.local
-.env.*.local
+.env
+.env.*
+!.env.example
 
 # Misc
 README.md
