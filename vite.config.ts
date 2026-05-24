@@ -1,4 +1,5 @@
 import path from 'path';
+import 'dotenv/config';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -74,9 +75,9 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
         proxy: {
           '/api': {
-            target: 'http://espaoilserver-v7pg66dplldqk7srhg6hemdr:8080',
+            target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8080',
             changeOrigin: true,
-            secure: true,
+            secure: (process.env.VITE_API_PROXY_TARGET || 'http://localhost:8080').startsWith('https://'),
             rewrite: (path: string) => path.replace(/^\/api/, ''),
           },
         },
