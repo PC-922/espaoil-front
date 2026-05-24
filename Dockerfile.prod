@@ -7,9 +7,7 @@ WORKDIR /app
 RUN npm install -g pnpm@11.3.0
 
 # Copy package files and install dependencies
-COPY package.json pnpm-lock.yaml ./
-# Approve esbuild postinstall scripts non-interactively for Docker builds
-RUN pnpm config set onlyBuiltDependencies esbuild
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # Copy source code and build
